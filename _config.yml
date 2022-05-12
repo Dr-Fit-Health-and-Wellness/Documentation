@@ -6,7 +6,7 @@ title: Dr. Fit Docs
 tagline: Dr. Fit developer documentation
 description: Dr. Fit developer documentation
 url: https://docs.dev.drfit.io/
-baseurl: "/" # the subpath of your site, e.g. /blog
+# baseurl: "" # the subpath of your site, e.g. /blog
 author: patrickthomas
 logo: "/assets/drfit.png"
 
