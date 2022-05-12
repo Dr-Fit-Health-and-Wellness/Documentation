@@ -1,8 +1,14 @@
-# Standard stuff
-
 # Load remote theme: https://just-the-docs.github.io/just-the-docs/
 remote_theme: just-the-docs/just-the-docs
-logo: "/assets/logo-square128.png"
+
+# Jekyll SEO Tag: https://jekyll.github.io/jekyll-seo-tag/usage/
+title: Dr. Fit Docs
+tagline: Dr. Fit developer documentation
+description: Dr. Fit developer documentation
+url: https://docs.dev.drfit.io/
+baseurl: "/" # the subpath of your site, e.g. /blog
+author: patrickthomas
+logo: "/assets/drfit.png"
 
 # Enable search.
 search_enabled: true
@@ -22,3 +28,22 @@ gh_edit_repository: "https://github.com/Dr-Fit-Health-and-Wellness/Documentation
 gh_edit_branch: "main" # the branch that your docs is served from
 # gh_edit_source: docs # the source that your files originate from
 gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
+
+# From https://github.com/just-the-docs/just-the-docs/blob/main/_config.yml
+plugins:
+  - jekyll-seo-tag
+
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  startings: []
+  blanklines: false
+  profile: false
+  # ignore:
+  #   envs: all
