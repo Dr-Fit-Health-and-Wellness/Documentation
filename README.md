@@ -1,5 +1,8 @@
-# Documentation
+---
+layout: default
+title: Dr. Fit - Developer Documentation
+---
 
-Dr. Fit development documentation
+# Dr. Fit Developer Documentation
 
 ![](/assets/logo-square128.png)
