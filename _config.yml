@@ -5,7 +5,7 @@ remote_theme: just-the-docs/just-the-docs
 title: Dr. Fit Docs
 tagline: Dr. Fit developer documentation
 description: Dr. Fit developer documentation
-url: https://docs.dev.drfit.io/
+url: https://docs.dev.drfit.io
 # baseurl: "" # the subpath of your site, e.g. /blog
 author: patrickthomas
 logo: "/assets/drfit.png"
