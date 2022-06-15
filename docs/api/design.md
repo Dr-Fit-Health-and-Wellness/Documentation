@@ -42,3 +42,53 @@ Requests can either be in form fields or sent as data to `php://input`. The late
 Errors to a response should contain a code, message, and description. Description should include a relevant link to documentation. Fielded requests like POST or PATCH need fielded errors in an array. Details will be in the API specification.
 
 # Required functionality and endpoints
+
+Shortlist of modules and their current API support:
+
+- [ ] Account
+  - [ ] Login, log out
+  - [ ] View account information
+  - [ ] Edit account information
+  - [ ] Metabolic and check-ins
+    - [ ] Timelines
+    - [ ] Check-ins
+    - [ ] Journals
+  - [ ] View downloads
+  - [ ] View messages/inbox
+  - [ ] Send messages
+  - [ ] Registration
+  - [ ] Simple statistics (to replace `userstats`)
+- [ ] Catalog
+  - [ ] View products
+    - [ ] Category
+    - [ ] Information
+    - [ ] Manufacturer
+    - [ ] Reviews
+  - [ ] View orders
+  - [ ] View recurrings
+- [ ] Checkout
+  - [ ] Add order
+  - [ ] Add recurring
+- [ ] Content
+  - [ ] View content
+- [ ] Dashboard
+- [ ] Feedback
+  - [ ] Send feedback
+- [ ] Meals
+  - [ ] See all meal plans
+  - [ ] See assigned meal plans
+  - [ ] Meals
+    - [ ] View meal
+    - [ ] Add meal view
+  - [ ] Meal plans
+    - [ ] View meal plan
+    - [ ] Add meal view plan
+  - [ ] Payment?
+  - [ ] SSO
+  - [ ] Video
+  - [ ] Workouts
+    - [ ] Workouts
+    - [ ] Exercises
+    - [ ] WOD
+
+API documentation in terms of endpoints, etc. 
