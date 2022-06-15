@@ -1,0 +1,618 @@
+---
+openapi: 3.0.2
+
+info:
+  title: Dr. Fit API
+  description: >-
+    Dr. Fit API. Meant for enabling application development and customer
+    integrations.
+
+
+    ## Quick Start
+
+    Get a login token:
+
+
+    ```GET https://drfit.io/members/index.php?route=api/v1/customers/login?email=email&password=password```
+
+
+    Be sure to set user-agent and provide a valid email and password.
+
+
+    This will return a token and the customer's data. Now send token in header `Authorization: Bearer <token>` to all requests. See below for endpoints and what they return. Be sure to explore schema view to see descriptions for the data fields.
+  version: 0.0.1
+  termsOfService: https://drfit.io/index.php?route=legal/terms_of_service
+  contact:
+    name: Dr. Fit
+    email: contact@drfit.io
+    url: https://drfit.io/index.php?route=common/contact
+
+tags:
+  - name: Account
+    description: Everything about accounts - account details, registration, statistics.
+  - name: Authentication
+    description: Logging in, removing access.
+
+externalDocs:
+  description: Official API documentation
+  url: https://docs.dev.drfit.io/
+
+servers:
+  - url: https://drfit.io/members/index.php?route={basePath}
+    description: Production server
+    variables:
+      basePath:
+        default: api/v1
+  - url: https://drfit.feroxpayapi.com/members/index.php?route={basePath}
+    description: Development server
+    variables:
+      basePath:
+        default: api/v1
+  - url: https://localhost:44300/members/index.php?route={basePath}
+    description: Local development server
+    variables:
+      basePath:
+        default: api/v1
+
+paths:
+  "/auth/tokens":
+    get:
+      summary: Generate a new API key for a customer.
+      description: Generate a new API key for a customer given a customer's email and password.
+      tags:
+        - Authentication
+      operationId: authToken
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: email
+          in: query
+          description: The email for login.
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A new API key was created and returned.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      api_key:
+                        type: string
+                        description: The new API key. It is a 256-bit string of numbers and mixed-case letters. Will be 256 characters long.
+                        example: foNf083DF...
+                      customer:
+                        type: object
+                        "$ref": "#/components/schemas/Customer"
+          headers:
+            X-Rate-Limit:
+              description: Call per hour allowed per the token.
+              schema:
+                type: integer
+                format: int32
+                example: 1000
+            X-Expires-After:
+              description: Date in UTC when the token expires.
+              schema:
+                type: string
+                format: date-time
+                example: 2020-01-01T00:00:00Z
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+    delete:
+      summary: Delete all API keys for a customer.
+      description: Delete all API keys for a customer.
+      tags:
+        - Authentication
+      operationId: authTokenDeleteAll
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: The API key was deleted.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/auth/tokens/_{token}":
+    delete:
+      summary: Delete an API key for a customer.
+      description: Delete an API key for a customer.
+      tags:
+        - Authentication
+      operationId: authTokenDelete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/ApiToken"
+      responses:
+        "200":
+          description: The API key was deleted.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/auth/tokens/_{token}/renew":
+    get:
+      summary: Renew an API key for a customer.
+      description: Renew an API key for a customer.
+      tags:
+        - Authentication
+      operationId: authTokenRenew
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/ApiToken"
+      responses:
+        "200":
+          description: The API key was renewed.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/DataModel"
+          headers:
+            X-Rate-Limit:
+              description: Call per hour allowed per the token.
+              schema:
+                type: integer
+                format: int32
+                example: 1000
+            X-Expires-After:
+              description: Date in UTC when the token expires.
+              schema:
+                type: string
+                format: date-time
+                example: 2020-01-01T00:00:00Z
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+  "/customers":
+    get:
+      summary: Get a customer's details.
+      description: Get the current customer's basic information, including account and recent metabolic data. Requires that the customer is logged in.
+      tags:
+        - Account
+      operationId: customer
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+  "/customers/_{customer_id}":
+    get:
+      summary: Get a specific customer's details.
+      description: Get the referenced customer's basic information, including account and recent metabolic data. Requires that the customer is logged in and has access. Customers only should have access to themselves.
+      tags:
+        - Account
+      operationId: customerGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/CustomerId"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Partially update a customer's fields.
+      description: Apply a partial update to a customer, editing it's customer fields or account fields. Metabolic data fields cannot be modified here. Some fields, like IDs, cannot be modified.
+      tags:
+        - Account
+      operationId: customerPatch
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - $ref: "#/components/parameters/CustomerId"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+      responses:
+        "200":
+          description: Customer updated. Modified customer is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+components:
+  parameters:
+    UserAgent:
+      name: user_agent
+      in: header
+      description: The user agent string. This is used to identify the client. Should be a string of the form "App Name/Version".
+      required: true
+      schema:
+        type: string
+        example: "Dr. Fit/1.0.0"
+
+    ApiToken:
+      name: token
+      in: path
+      description: API token.
+      required: true
+      schema:
+        type: string
+        example: foNf083DF
+
+    CustomerId:
+      name: customer_id
+      in: path
+      description: A customer's ID.
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 34
+
+  responses:
+    "Unauthorized":
+      description: Incorrect credentials or account doesn't exist.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+            properties:
+              code:
+                type: integer
+                format: int32
+                description: The error code.
+                example: 401
+              message:
+                type: string
+                description: The error message.
+                example: "Incorrect credentials or account doesn't exist."
+    "Insecure":
+      description: Insecure methods not allowed. Upgrade to HTTPS.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+            properties:
+              code:
+                type: integer
+                format: int32
+                description: The error code.
+                example: 426
+              message:
+                type: string
+                description: The error message.
+                example: "Insecure methods not allowed. Upgrade to HTTPS."
+    "RateLimited":
+      description: Too many authentication requests. This rate limit is lower than most others for security.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+            properties:
+              code:
+                type: integer
+                format: int32
+                description: The error code.
+                example: 429
+              message:
+                type: string
+                description: The error message.
+                example: "Too many requests."
+    default:
+      description: An unexpected error occurred.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+
+  schemas:
+    AccountMutable:
+      description: Mutable fields for a customer account.
+      type: object
+      properties:
+        handle:
+          type: string
+          description: The account's username.
+          example: drfit
+        points:
+          type: integer
+          format: int32
+          description: The account's current number of points.
+          example: 54
+        bio:
+          type: string
+          description: The account's bio.
+          example: I am a fitness enthusiast.
+        goal:
+          type: string
+          description: The account's goal, which corresponds to a specific option. Should be empty, "option-1", "option-2", or "option-3".
+          example: option-1
+        check_in_frequency:
+          type: integer
+          format: int32
+          description: The account's check-in frequency in number of days.
+          example: 7
+        check_in_offset:
+          type: integer
+          format: int32
+          description: The account's first check-in offset in days from `last_login`, which is used to calculate which day the check-ins started. For weekly schedules, it affects the start day. Otherwise, it affects the first day of the cycle, which could "shift" every day by some number.
+          example: 1
+        check_in_buffer:
+          type: integer
+          format: int32
+          description: The account's check-in buffer in days. This is the number of days until a member's check-in is considered to be late.
+          example: 3
+        preferences:
+          type: object
+          description: The unstructured dump of the account's preferences and supplementary data.
+
+    Account:
+      description: A customer's extra account information. An account differs from customer in that account is only for the personal training service, whereas customer is a general user that can make purchases.
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/AccountMutable"
+      properties:
+        account_id:
+          type: integer
+          format: int32
+          description: The account's internal ID.
+          example: 67
+        metabolic:
+          nullable: true
+          "$ref": "#/components/schemas/MetabolicData"
+        profile_img:
+          type: string
+          description: The account's profile image.
+          example: https://drfit.io/image/cache/profile/7da18387cb2bd08846ef1d8fdefba4e0a4ef2395f708781d60acbe974c819d16.png
+        last_login:
+          type: string
+          format: date-time
+          description: The account's last login.
+          example: 2020-01-01T00:00:00+00:00
+
+    CustomerMutable:
+      description: Mutable customer fields.
+      type: object
+      properties:
+        first_name:
+          type: string
+          description: The customer's first name.
+          example: John
+        last_name:
+          type: string
+          description: The customer's last name.
+          example: Doe
+        email:
+          type: string
+          description: The customer's email address.
+          example: john.doe@example.com
+        telephone:
+          type: string
+          description: The customer's telephone number.
+          example: +15555555555
+        newsletter:
+          type: boolean
+          description: Whether the customer wants to receive emails from Dr. Fit.
+          example: true
+        account:
+          type: object
+          description: The customer's account details. This can be null in very specific cases, such as if the customer first registers on the catalog module and then moves to the members module.
+          nullable: true
+          "$ref": "#/components/schemas/AccountMutable"
+
+    Customer:
+      description: Customer data as returned from the API.
+      type: object
+      properties:
+        customer_id:
+          type: integer
+          format: int32
+          description: The customer's internal ID.
+          example: 52
+        customer_group_id:
+          type: integer
+          format: int32
+          description: The customer group ID. Currently not used. Will be 1 in most cases.
+          example: 1
+        address_id:
+          type: integer
+          format: int32
+          description: The customer's address ID. Defaults to 0, which means the customer has no address.
+          example: 3
+        ip:
+          type: string
+          description: The customer's most recently used IP address.
+          example: 127.0.0.1
+        account_type:
+          type: integer
+          format: int32
+          description: The customer's account type (basic workout, pro, etc.) represented as the account type ID.
+          example: 4
+        account:
+          type: object
+          description: The customer's account details. This can be null in very specific cases, such as if the customer first registers on the catalog module and then moves to the members module.
+          nullable: true
+          "$ref": "#/components/schemas/Account"
+
+    MetabolicData:
+      type: object
+      properties:
+        metabolic_id:
+          type: integer
+          format: int32
+          description: The internal ID for the metabolic data.
+          example: 112
+        gender:
+          type: string
+          description: The associated gender used for calculating basal metabolic rate (BMR) and total energy expenditure (TEE). Is either "male" or "female".
+          example: female
+        height:
+          type: number
+          format: float
+          description: The recorded height in centimeters (cm).
+          example: 162.3
+        weight:
+          type: number
+          format: float
+          description: The recorded weight in kilograms (kg).
+          example: 70.0
+        age:
+          type: integer
+          format: int32
+          description: The recorded age in years.
+          example: 25
+        date_added:
+          type: string
+          format: date-time
+          description: The date the metabolic data was last added or updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    CustomerModel:
+      type: object
+      "$ref": "#/components/schemas/DataModel"
+      required:
+        - data
+      properties:
+        data:
+          "$ref": "#/components/schemas/Customer"
+
+    DataModel:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful.
+          example: true
+
+    ErrorsModel:
+      nullable: true
+      type: object
+      required:
+        - code
+        - message
+      allOf:
+        - $ref: "#/components/schemas/DataModel"
+        - $ref: "#/components/schemas/ErrorModel"
+      properties:
+        success:
+          type: boolean
+          description: Whether the request was successful.
+          example: false
+        errors:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorModel"
+
+    ErrorModel:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: The error code.
+          example: 123
+        message:
+          type: string
+          description: The error message.
+          example: An error occurred.
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Authentication via API key or token sent in header.
+    httpBasic:
+      type: http
+      scheme: basic
+      description: Authentication via username and password. Not recommended; API key-based authentication is preferred.
+
+security:
+  - httpBasic: []
+    apiKey: []
