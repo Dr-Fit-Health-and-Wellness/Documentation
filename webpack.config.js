@@ -37,21 +37,15 @@ module.exports = {
     new CleanWebpackPlugin(),
     new CopyWebpackPlugin({
       patterns: [
-        {
-          from: path.resolve(__dirname, "assets"),
-          to: path.resolve(__dirname, "dist"),
-        },
+        // Favicon and assets.
         path.resolve(__dirname, "assets", "favicon.ico"),
-      ],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.resolve(
-            "node_modules/swagger-ui/dist/oauth2-redirect.html"
-          ),
-          to: path.resolve(__dirname, "dist"),
-        },
+        // CNAME for GH Pages.
+        path.resolve(__dirname, "CNAME"),
+        // OAuth2 redirect?
+        path.resolve(
+          __dirname,
+          "node_modules/swagger-ui/dist/oauth2-redirect.html"
+        ),
       ],
     }),
     new HtmlWebpackPlugin({
