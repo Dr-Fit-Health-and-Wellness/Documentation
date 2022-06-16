@@ -813,7 +813,7 @@ components:
           description: The date the message was added.
           example: 2020-01-01T00:00:00+00:00
 
-    Coach:
+    User:
       description: A user/coach.
       type: object
       properties:
@@ -1456,10 +1456,6 @@ components:
           description: The date the recurring transaction was added.
           example: 2020-01-01T00:00:00+00:00
 
-    # ##########################################
-    # Checkout and cart
-    # ##########################################
-
     OrderShipment:
       description: A shipment for an order.
       type: object
@@ -1481,6 +1477,179 @@ components:
           type: string
           description: The shipping tracking number of the shipment.
           example: 123456789
+
+    # ##########################################
+    # Checkout and cart
+    # ##########################################
+
+    CartMutable:
+      description: A mutable cart row.
+      type: object
+      required:
+        - product_id
+        - recurring_id
+        - quantity
+      properties:
+        product_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the product.
+        recurring_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the recurring profile.
+        option:
+          type: string
+          description: The options for the product.
+        quantity:
+          type: integer
+          format: int32
+          description: The quantity of the product.
+          example: 1
+
+    Cart:
+      description: A cart row.
+      type: object
+      properties:
+        cart_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the cart.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the product was added.
+          example: 2020-01-01T00:00:00+00:00
+
+    # ##########################################
+    # Workouts
+    # ##########################################
+
+    WOD:
+      description: A workout of the day.
+      type: object
+      properties:
+        assignment_group_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the assignment group.
+        title:
+          type: string
+          description: The title of the workout.
+          example: Global workout of the day
+        body:
+          type: string
+          description: The body of the workout.
+          example: Global workout of the day details
+        workouts:
+          type: array
+          description: The workouts of the workout.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/Workout"
+
+    Workout:
+      description: A workout. Typically is something that you complete in one session and only once per day or couple of days.
+      type: object
+      properties:
+        workout_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the workout.
+        title:
+          type: string
+          description: The title of the workout.
+          example: Arms day
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the workout was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the workout was updated.
+          example: 2020-01-01T00:00:00+00:00
+        exercises:
+          type: array
+          description: The exercises of the workout.
+          items:
+            $ref: "#/components/schemas/Exercise"
+
+    Exercise:
+      description: An exercise. A part of a workout.
+      type: object
+      properties:
+        exercise_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the exercise.
+        title:
+          type: string
+          description: The title of the exercise.
+          example: Pushups
+        body_html:
+          type: string
+          description: The body of the exercise.
+          example: Pushups details
+        focus:
+          type: string
+          description: The focus of the exercise.
+          example: arms
+        author:
+          type: object
+          description: The author of the exercise.
+          allOf:
+            - "$ref": "#/components/schemas/User"
+        reps_sets:
+          type: array
+          description: The reps and sets of the exercise.
+          items:
+            type: object
+            allOf:
+              - "$ref": "#/components/schemas/RepSetPair"
+        video:
+          type: object
+          description: Video information for the exercise.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the exercise was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the exercise was updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    RepSetPair:
+      description: A rep set pair.
+      type: object
+      properties:
+        reps:
+          type: string
+          description: The number of reps. Can be a number, range, or short description.
+          example: 10
+        sets:
+          type: string
+          description: The number of sets or groups of reps to accomplish. Can be a number, range, or short description.
+          example: 3
+        title:
+          type: string
+          description: The title of the rep set pair, which is used to group similar rep-set combos.
+          example: Beginner
+        body:
+          type: string
+          description: Short description for the pair.
+          example: Do as many as you can.
+        order:
+          type: integer
+          format: int32
+          description: The order of the rep set pair within other pairs.
+
+    # ##########################################
+    # Meals
+    # ##########################################
 
     # ##########################################
     # Request- and response-specific
