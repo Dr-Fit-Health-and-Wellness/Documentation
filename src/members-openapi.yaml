@@ -13,7 +13,7 @@ info:
     Get a login token:
 
 
-    ```GET https://drfit.io/members/index.php?route=api/v1/customers/login?email=email&password=password```
+    ```GET https://members.api.drfit.io/v1/customers/login?email=email&password=password```
 
 
     Be sure to set user-agent and provide a valid email and password.
@@ -30,6 +30,8 @@ info:
 tags:
   - name: Account
     description: Everything about accounts - account details, registration, statistics.
+  - name: Metabolic and Check-ins
+    description: Metabolic data retrieval and editing, submit check-ins.
   - name: Authentication
     description: Logging in, removing access.
 
@@ -38,21 +40,24 @@ externalDocs:
   url: https://docs.dev.drfit.io/
 
 servers:
-  - url: https://drfit.io/members/index.php?route={basePath}
+  - url: https://members.api.drfit.io/{basePath}
     description: Production server
     variables:
       basePath:
-        default: api/v1
-  - url: https://drfit.feroxpayapi.com/members/index.php?route={basePath}
-    description: Development server
+        default: v1
+        description: The base path of the API. Reflects the version to use.
+  - url: https://members.api.drfit.feroxpayapi.com/{basePath}
+    description: Development sandbox server
     variables:
       basePath:
-        default: api/v1
+        default: v1
+        description: The base path of the API. Reflects the version to use.
   - url: https://localhost:44300/members/index.php?route={basePath}
     description: Local development server
     variables:
       basePath:
         default: api/v1
+        description: The base path of the API. Reflects the version to use.
 
 paths:
   "/auth/tokens":
@@ -197,6 +202,7 @@ paths:
           "$ref": "#/components/responses/Insecure"
         "429":
           "$ref": "#/components/responses/RateLimited"
+
   "/customers":
     get:
       summary: Get a customer's details.
@@ -225,6 +231,7 @@ paths:
           "$ref": "#/components/responses/Insecure"
         "429":
           "$ref": "#/components/responses/RateLimited"
+
   "/customers/_{customer_id}":
     get:
       summary: Get a specific customer's details.
@@ -514,14 +521,10 @@ components:
           nullable: true
           "$ref": "#/components/schemas/Account"
 
-    MetabolicData:
+    MetabolicDataMutable:
+      description: Mutable fields of metabolic data (height, weight, gender) used to record progress and calculate values like BMR and TEE.
       type: object
       properties:
-        metabolic_id:
-          type: integer
-          format: int32
-          description: The internal ID for the metabolic data.
-          example: 112
         gender:
           type: string
           description: The associated gender used for calculating basal metabolic rate (BMR) and total energy expenditure (TEE). Is either "male" or "female".
@@ -541,11 +544,181 @@ components:
           format: int32
           description: The recorded age in years.
           example: 25
-        date_added:
+
+    MetabolicData:
+      description: Metabolic data (height, weight, gender) used to record progress and calculate values like BMR and TEE.
+      allOf:
+        - "$ref": "#/components/schemas/MetabolicDataMutable"
+      type: object
+      properties:
+        metabolic_id:
+          type: integer
+          format: int32
+          description: The internal ID for the metabolic data.
+          example: 112
+        datetime_added:
           type: string
           format: date-time
           description: The date the metabolic data was last added or updated.
           example: 2020-01-01T00:00:00+00:00
+
+    TimelineEntryMutable:
+      description: Mutable fields for a timeline entry, which is a photo upload meant to show someone's physical progress. Not included here is the image itself, which should be uploaded in the event that this is a new entry.
+      type: object
+      properties:
+        name:
+          type: string
+          description: The title of the timeline entry.
+          example: Me after one week
+        body:
+          type: string
+          description: The description of the timeline entry.
+          example: Feeling good.
+        private:
+          type: boolean
+          description: Whether the timeline entry is private and not to be shared with coaches. If true, the entry can only be seen by the customer.
+          example: true
+
+    TimelineEntry:
+      description: A photo upload meant to show someone's physical progress.
+      allOf:
+        - "$ref": "#/components/schemas/TimelineEntryMutable"
+      type: object
+      properties:
+        date_added:
+          type: string
+          format: date
+          description: The date the timeline entry was added.
+          example: 2020-01-01
+
+    JournalEntryMutable:
+      description: Mutable fields for a journal entry, which serves both like a notepad to the customer and as a possible line of communication from customer to coach.
+      type: object
+      properties:
+        name:
+          type: string
+          description: The title of the journal entry.
+          example: Me after one week
+        body_html:
+          type: string
+          description: The body of the journal entry. This is the main content of the entry and is in HTML.
+          example: Feeling good.
+        private:
+          type: boolean
+          description: Whether the journal entry is private and not to be shared with coaches. If true, the entry can only be seen by the customer.
+          example: true
+
+    JournalEntry:
+      description: Serves both like a notepad to the customer and as a possible line of communication from customer to coach.
+      allOf:
+        - "$ref": "#/components/schemas/JournalEntryMutable"
+      type: object
+      properties:
+        date_added:
+          type: string
+          format: date
+          description: The date the journal entry was added.
+          example: 2020-01-01
+        date_updated:
+          type: string
+          format: date
+          description: The date the journal entry was last updated.
+          example: 2020-01-02
+
+    CheckInMutable:
+      description: Mutable fields for a check-in's submission.
+      type: object
+      properties:
+        sleep_was_good:
+          type: boolean
+          description: Whether the customer slept well.
+          example: true
+        sleep_was_good_why:
+          type: string
+          description: The reason why the customer slept didn't sleep well.
+          example: I couldn't sleep.
+          nullable: true
+        fitness_followed_plans:
+          type: boolean
+          description: Whether the customer followed the fitness plans.
+          example: true
+        fitness_followed_plans_why:
+          type: string
+          description: The reason why the customer didn't follow the fitness plans.
+          example: I didn't follow the plans.
+          nullable: true
+        fitness_ultimate_training_description:
+          type: string
+          description: Description of what training the customer did, only for ultimate members.
+          example: I did some training.
+          nullable: true
+        nutrition_followed_plans:
+          type: boolean
+          description: Whether the customer followed the nutrition plans.
+          example: true
+        nutrition_followed_plans_why:
+          type: string
+          description: The reason why the customer didn't follow the nutrition plans.
+          example: I didn't follow the plans.
+          nullable: true
+        nutrition_problems:
+          type: string
+          description: Any problems the customer had with nutrition.
+          example: I had a problem.
+          nullable: true
+        nutrition_ultimate_daily_water_intake:
+          type: integer
+          format: int32
+          description: The daily water intake the customer had in fl. oz., only for ultimate members.
+          example: 500
+        nutrition_ultimate_number_bowel_movements:
+          type: integer
+          format: int32
+          description: The number of bowel movements the customer had, only for ultimate members.
+          example: 5
+        nutrition_ultimate_diet_plan_changes:
+          type: string
+          description: Any changes the customer made to the diet plan, only for ultimate members.
+          example: I changed the plan.
+          nullable: true
+        nutrition_ultimate_supplements:
+          type: string
+          description: Any supplements the customer took, only for ultimate members.
+          example: I took supplements.
+          nullable: true
+        other_comments:
+          type: string
+          description: Any other comments the customer had.
+          example: I had a comment.
+          nullable: true
+
+    CheckIn:
+      description: A check-in, where a customer sends their coach workout and nutrition progress information.
+      allOf:
+        - "$ref": "#/components/schemas/CheckInMutable"
+      type: object
+      properties:
+        check_in_id:
+          type: integer
+          format: int32
+          description: The internal ID for the check-in.
+          example: 112
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the check-in was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the check-in was last updated.
+          example: 2020-01-01T00:00:00+00:00
+        reviewed_by:
+          type: array
+          description: The user IDs of the coaches who reviewed the check-in.
+          items:
+            type: integer
+            format: int32
 
     CustomerModel:
       type: object
