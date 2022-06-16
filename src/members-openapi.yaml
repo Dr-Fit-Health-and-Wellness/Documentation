@@ -393,6 +393,65 @@ components:
               - "$ref": "#/components/schemas/ErrorsModel"
 
   schemas:
+    SystemID:
+      type: integer
+      format: int32
+      description: Internal ID used to reference this object.
+      example: 1234
+
+    # ##########################################
+    # Account and customer
+    # ##########################################
+
+    Address:
+      description: An address.
+      type: object
+      properties:
+        first_name:
+          type: string
+          description: The first name of the customer.
+          example: John
+        last_name:
+          type: string
+          description: The last name of the customer.
+          example: Doe
+        address_1:
+          type: string
+          description: The first line of the address.
+          example: 123 Main St.
+        address_2:
+          type: string
+          description: The second line of the address.
+          example: Apt. 1
+        city:
+          type: string
+          description: The city of the address.
+          example: New York
+        postcode:
+          type: string
+          description: The postcode of the address.
+          example: 10001
+        country:
+          type: string
+          description: The country of the address.
+          example: USA
+        country_id:
+          description: The ID of the country.
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+        zone:
+          type: string
+          description: The state or province of the address.
+          example: New York
+        zone_id:
+          description: The ID of the state or province.
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+        address_format:
+          type: string
+          description: The format of the address.
+          example: "{first_name} {last_name}..."
+
     AccountMutable:
       description: Mutable fields for a customer account.
       type: object
@@ -440,10 +499,9 @@ components:
         - "$ref": "#/components/schemas/AccountMutable"
       properties:
         account_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The account's internal ID.
-          example: 67
         metabolic:
           nullable: true
           "$ref": "#/components/schemas/MetabolicData"
@@ -492,18 +550,17 @@ components:
       type: object
       properties:
         customer_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The customer's internal ID.
-          example: 52
         customer_group_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The customer group ID. Currently not used. Will be 1 in most cases.
           example: 1
         address_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The customer's address ID. Defaults to 0, which means the customer has no address.
           example: 3
         ip:
@@ -511,8 +568,8 @@ components:
           description: The customer's most recently used IP address.
           example: 127.0.0.1
         account_type:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The customer's account type (basic workout, pro, etc.) represented as the account type ID.
           example: 4
         account:
@@ -520,6 +577,10 @@ components:
           description: The customer's account details. This can be null in very specific cases, such as if the customer first registers on the catalog module and then moves to the members module.
           nullable: true
           "$ref": "#/components/schemas/Account"
+
+    # ##########################################
+    # Metabolic, check-ins, coaches
+    # ##########################################
 
     MetabolicDataMutable:
       description: Mutable fields of metabolic data (height, weight, gender) used to record progress and calculate values like BMR and TEE.
@@ -552,8 +613,8 @@ components:
       type: object
       properties:
         metabolic_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The internal ID for the metabolic data.
           example: 112
         datetime_added:
@@ -699,10 +760,9 @@ components:
       type: object
       properties:
         check_in_id:
-          type: integer
-          format: int32
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
           description: The internal ID for the check-in.
-          example: 112
         datetime_added:
           type: string
           format: date-time
@@ -719,6 +779,712 @@ components:
           items:
             type: integer
             format: int32
+
+    MessageMutable:
+      description: Mutable fields for message from/to a coach.
+      type: object
+      properties:
+        body:
+          type: string
+          description: The body of the message.
+          example: This is the message body.
+        recipient_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The user ID of the recipient of the message.
+
+    Message:
+      description: A message from/to a coach.
+      allOf:
+        - "$ref": "#/components/schemas/MessageMutable"
+      type: object
+      properties:
+        message_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the message.
+        is_read:
+          type: boolean
+          description: Whether the message has been read.
+          example: true
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the message was added.
+          example: 2020-01-01T00:00:00+00:00
+
+    Coach:
+      description: A user/coach.
+      type: object
+      properties:
+        user_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the user.
+        first_name:
+          type: string
+          description: The first name of the user.
+          example: John
+        last_name:
+          type: string
+          description: The last name of the user.
+          example: Doe
+        coach_name:
+          type: string
+          description: The name of the coach.
+          example: John Doe
+
+    # ##########################################
+    # Products and orders
+    # ##########################################
+
+    Product:
+      description: A store product.
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/ProductDescription"
+      properties:
+        product_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the product.
+        master_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The parent product's ID.
+        model:
+          type: string
+          description: The model of the product.
+          example: Basic Workout (1 month)
+        sku:
+          type: string
+          description: The stock keeping unit of the product.
+          example: 306
+        upc:
+          type: string
+          description: The universal product code of the product.
+          example: 1234567890123
+        ean:
+          type: string
+          description: The european article number of the product.
+          example: 1234567890123
+        jan:
+          type: string
+          description: The japanese article number of the product.
+          example: 1234567890123
+        isbn:
+          type: string
+          description: The international standard book number of the product.
+          example: 1234567890123
+        mpn:
+          type: string
+          description: The manufacturer part number of the product.
+          example: 1234567890123
+        location:
+          type: string
+          description: The location of the product.
+          example: United States
+        variant:
+          type: string
+          description: The variant of the product.
+          example: Red
+        override:
+          type: string
+          description: The override of the product. Unused?
+        stock_status:
+          type: string
+          description: The stock status of the product.
+          example: In Stock
+        image:
+          type: string
+          description: URL of the main image of the product.
+          example: https://example.com/image.jpg
+        price:
+          type: string
+          description: The price of the product. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        points:
+          type: integer
+          format: int32
+          description: How many points a customer receives for purchasing the product.
+        tax_class:
+          type: string
+          description: The tax class of the product.
+        date_available:
+          type: string
+          format: date
+          description: The date the product is available.
+        weight:
+          type: string
+          description: The weight of the product. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        weight_class:
+          type: string
+          description: The weight class of the product.
+          example: Kilogram
+        length:
+          type: string
+          description: The length of the product. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        width:
+          type: string
+          description: The width of the product. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        height:
+          type: string
+          description: The height of the product. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        length_class:
+          type: string
+          description: The length class of the product.
+          example: Meter
+        minimum:
+          type: integer
+          format: int32
+          description: The minimum order quantity of the product.
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the product.
+        viewed:
+          type: integer
+          format: int32
+          description: The number of times the product has been viewed.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the product was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the product was last updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    ProductDescription:
+      description: A product description for a language. By default English is used. An alternate language can be supplied via a header.
+      type: object
+      properties:
+        language:
+          type: string
+          description: The language code of the product description.
+          example: en-gb
+        name:
+          type: string
+          description: The name of the product.
+          example: Basic Workout (1 month)
+        body_html:
+          type: string
+          description: The body of the product.
+          example: <p>This is the product body.</p>
+        tag:
+          type: string
+          description: The tags of the product.
+          example: workout, basic
+        meta_title:
+          type: string
+          description: The meta title of the product.
+          example: Basic Workout (1 month)
+        meta_description:
+          type: string
+          description: The meta description of the product.
+          example: This is the product meta description.
+        meta_keyword:
+          type: string
+          description: The meta keywords of the product.
+          example: basic, workout, 1 month
+
+    ProductOption:
+      description: A product option.
+      type: object
+      properties:
+        product_option_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the option.
+        value:
+          type: string
+          description: The value of the option.
+          example: Red
+        required:
+          type: boolean
+          description: Whether the option is required.
+          example: true
+        option:
+          type: object
+          description: The option.
+          allOf:
+            - "$ref": "#/components/schemas/Option"
+
+    ProductOptionValue:
+      description: A product option value.
+      type: object
+      properties:
+        product_option_value_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the option.
+        quantity:
+          type: integer
+          format: int32
+          description: The quantity of the option value.
+          example: 1
+        price:
+          type: string
+          description: The price of the option value. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        price_prefix:
+          type: string
+          description: The price prefix of the option value.
+          example: +
+        points:
+          type: integer
+          format: int32
+          description: The points of the option value.
+          example: 1
+        points_prefix:
+          type: string
+          description: The points prefix of the option value.
+          example: +
+        weight:
+          type: string
+          description: The weight of the option value. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        weight_prefix:
+          type: string
+          description: The weight prefix of the option value.
+          example: +
+
+    Option:
+      description: An option.
+      type: object
+      properties:
+        option_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the option.
+        type:
+          type: string
+          description: The type of the option.
+          example: select
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the option.
+          example: 1
+        values:
+          type: array
+          description: The values of the option.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/OptionValue"
+      allOf:
+        - "$ref": "#/components/schemas/OptionDescription"
+
+    OptionDescription:
+      description: An option description for a language. By default English is used. An alternate language can be supplied via a header.
+      type: object
+      properties:
+        language:
+          type: string
+          description: The language code of the option description.
+          example: en-gb
+        name:
+          type: string
+          description: The name of the option.
+          example: Size
+
+    OptionValue:
+      description: An option value.
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/OptionValueDescription"
+      properties:
+        option_value_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the option.
+        image:
+          type: string
+          description: The URL image of the option value.
+          example: https://example.com/image.jpg
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the option value.
+          example: 1
+
+    OptionValueDescription:
+      description: An option value description for a language. By default English is used. An alternate language can be supplied via a header.
+      type: object
+      properties:
+        language:
+          type: string
+          description: The language code of the option value description.
+          example: en-gb
+        name:
+          type: string
+          description: The name of the option value.
+          example: Small
+
+    Order:
+      description: An order.
+      type: object
+      properties:
+        order_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the order.
+        invoice_no:
+          type: string
+          description: The invoice number of the order.
+          example: 12345
+        invoice_prefix:
+          type: string
+          description: The invoice prefix of the order.
+          example: INV-
+        store_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the store.
+        store_name:
+          type: string
+          description: The name of the store.
+          example: Example Store
+        store_url:
+          type: string
+          description: The URL of the store.
+          example: https://example.com
+        first_name:
+          type: string
+          description: The first name of the customer.
+          example: John
+        last_name:
+          type: string
+          description: The last name of the customer.
+          example: Doe
+        email:
+          type: string
+          description: The email of the customer.
+          example:
+        telephone:
+          type: string
+          description: The telephone of the customer.
+          example: +15555555555
+        fax:
+          type: string
+          description: The fax of the customer.
+          example: +15555555555
+        payment:
+          type: object
+          description: The payment details of the order.
+          allOf:
+            - "$ref": "#/components/schemas/Address"
+          properties:
+            custom_field:
+              type: string
+              description: Other data to attach to the payment.
+              example: "{}"
+            method:
+              type: string
+              description: The method of the payment.
+              example: bank_transfer
+            code:
+              type: string
+              description: The code of the payment.
+              example: 12345
+        shipping:
+          type: object
+          description: The shipping details of the order.
+          allOf:
+            - "$ref": "#/components/schemas/Address"
+          properties:
+            custom_field:
+              type: string
+              description: Other data to attach to the shipping.
+              example: "{}"
+            method:
+              type: string
+              description: The method of the shipping.
+              example: flat
+            code:
+              type: string
+              description: The code of the shipping.
+              example: 12345
+        comment:
+          type: string
+          description: The comment of the order.
+          example: This is a comment.
+        total:
+          type: string
+          description: The total of the order. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        order_status:
+          type: string
+          description: The status of the order.
+          example: pending
+        tracking:
+          type: string
+          description: The tracking of the order.
+          example: 12345
+        currency_code:
+          type: string
+          description: The currency code of the order.
+          example: USD
+        currency_value:
+          type: string
+          description: The currency value of the order. Formatted as a decimal number as a string for precision. Eight decimal places are used.
+          example: "10.00000000"
+        histories:
+          type: array
+          description: The histories of the order.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/OrderHistory"
+        options:
+          type: array
+          description: The options of the order.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/OrderOption"
+        products:
+          type: array
+          description: The products of the order.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/OrderProduct"
+        recurrings:
+          type: array
+          description: The recurrings of the order.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/OrderRecurring"
+
+    OrderHistory:
+      description: An order history entry.
+      type: object
+      properties:
+        order_history_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the order history.
+        order_status:
+          type: string
+          description: The order status.
+          example: complete
+        notify:
+          type: boolean
+          description: Whether the customer should be notified.
+          example: true
+        comment:
+          type: string
+          description: The comment for the order history.
+          example: This is the order history comment.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the order history was added.
+          example: 2020-01-01T00:00:00+00:00
+
+    OrderOption:
+      description: An order option.
+      type: object
+      properties:
+        order_option_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the order option.
+        product_option:
+          type: object
+          description: The product option.
+          allOf:
+            - "$ref": "#/components/schemas/ProductOption"
+        name:
+          type: string
+          description: The name of the option.
+          example: Size
+        value:
+          type: string
+          description: The value of the option.
+          example: Small
+        type:
+          type: string
+          description: The type of the option.
+          example: select
+
+    OrderProduct:
+      description: An order product. Differs from a product in that it "freezes" the product and its attributes at the time of the order.
+      type: object
+      properties:
+        order_product_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the order product.
+        name:
+          type: string
+          description: The name of the order product.
+          example: Basic Workout
+        model:
+          type: string
+          description: The model of the order product.
+          example: Basic Workout (1 month)
+        quantity:
+          type: integer
+          format: int32
+          description: The quantity of the order product.
+          example: 1
+        price:
+          type: string
+          description: The price of the order product. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        total:
+          type: string
+          description: The total of the order product. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        tax:
+          type: string
+          description: The tax of the order product. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        reward:
+          type: integer
+          format: int32
+          description: The reward points of the order product.
+          example: 100
+
+    OrderRecurring:
+      description: A recurring profile for an order.
+      type: object
+      properties:
+        order_recurring_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the order recurring.
+        reference:
+          type: string
+          description: The reference of the recurring profile.
+          example: 1234567890123
+        product:
+          type: object
+          description: The product of the recurring profile.
+          allOf:
+            - "$ref": "#/components/schemas/Product"
+        product_name:
+          type: string
+          description: The name of the product.
+          example: Basic Workout (1 month)
+        product_quantity:
+          type: integer
+          format: int32
+          description: The quantity of the product.
+          example: 1
+        recurring_name:
+          type: string
+          description: The name of the recurring profile.
+          example: Basic Workout (1 month)
+        recurring_description:
+          type: string
+          description: The description of the recurring profile.
+          example: Basic Workout (1 month)
+        recurring_frequency:
+          type: string
+          description: The time unit of the recurring profile.
+          example: month
+        recurring_cycle:
+          type: integer
+          format: int32
+          description: The number of time units until this is expected to charge again.
+          example: 1
+        recurring_duration:
+          type: integer
+          format: int32
+          description: The number of cycles until this recurring profile ends.
+          example: 12
+        recurring_price:
+          type: string
+          description: The price of the recurring profile. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        has_trial:
+          type: boolean
+          description: Whether the recurring profile has a trial period.
+          example: true
+        trial_frequency:
+          type: string
+          description: The time unit of the trial period.
+          example: month
+        trial_cycle:
+          type: integer
+          format: int32
+          description: The number of time units until this is expected to charge again.
+          example: 1
+        trial_duration:
+          type: integer
+          format: int32
+          description: The number of cycles until this recurring profile ends.
+          example: 1
+        trial_price:
+          type: string
+          description: The price of the trial period. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "0.0000"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the recurring profile was added.
+          example: 2020-01-01T00:00:00+00:00
+
+    OrderRecurringTransaction:
+      description: A recurring transaction for an order.
+      type: object
+      properties:
+        order_recurring_transaction_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the recurring transaction.
+        reference:
+          type: string
+          description: The reference for the recurring transaction.
+        type:
+          type: string
+          description: The type of the recurring transaction.
+          example: payment
+        amount:
+          type: string
+          description: The amount of the recurring transaction. Formatted as a decimal number as a string for precision. Four decimal places are used.
+          example: "10.0000"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the recurring transaction was added.
+          example: 2020-01-01T00:00:00+00:00
+
+    # ##########################################
+    # Checkout and cart
+    # ##########################################
+
+    OrderShipment:
+      description: A shipment for an order.
+      type: object
+      properties:
+        order_shipment_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the shipment.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the shipment was added.
+          example: 2020-01-01T00:00:00+00:00
+        shipping_courier:
+          type: string
+          description: The shipping courier of the shipment.
+          example: UPS
+        shipping_tracking_number:
+          type: string
+          description: The shipping tracking number of the shipment.
+          example: 123456789
+
+    # ##########################################
+    # Request- and response-specific
+    # ##########################################
 
     CustomerModel:
       type: object
