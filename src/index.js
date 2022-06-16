@@ -3,8 +3,6 @@ import "swagger-ui/dist/swagger-ui.css";
 
 const spec = require("./members-openapi.yaml");
 
-console.log(spec);
-
 const ui = SwaggerUI({
   spec,
   dom_id: "#swagger",
