@@ -399,6 +399,18 @@ components:
       description: Internal ID used to reference this object.
       example: 1234
 
+    HasThumbnails:
+      type: object
+      properties:
+        thumbnail_image_small_url:
+          type: string
+          description: A smaller thumbnail for this resource.
+          example: https://example.com/image-s.jpg
+        thumbnail_image_url:
+          type: string
+          description: The full size thumbnail.
+          example: https://example.com/image.jpg
+
     # ##########################################
     # Account and customer
     # ##########################################
@@ -1528,6 +1540,8 @@ components:
     WOD:
       description: A workout of the day.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         assignment_group_id:
           allOf:
@@ -1551,6 +1565,8 @@ components:
     Workout:
       description: A workout. Typically is something that you complete in one session and only once per day or couple of days.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         workout_id:
           allOf:
@@ -1579,6 +1595,8 @@ components:
     Exercise:
       description: An exercise. A part of a workout.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         exercise_id:
           allOf:
@@ -1693,6 +1711,7 @@ components:
 
     Ingredient:
       type: object
+      description: A component of a meal. Can be reused across meals.
       allOf:
         - "$ref": "#/components/schemas/Nutrients"
       properties:
@@ -1726,6 +1745,9 @@ components:
 
     Meal:
       type: object
+      description: A meal plan consisting of zero or more ingredients and optionally attached videos.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         meal_id:
           allOf:
@@ -1739,10 +1761,6 @@ components:
           type: string
           description: The body of the meal.
           example: Carrot and cheese details
-        image_url:
-          type: string
-          description: The image URL of the meal.
-          example: https://example.com/image.jpg
         servings:
           type: integer
           format: int32
@@ -1777,6 +1795,9 @@ components:
 
     MealPlan:
       type: object
+      description: A meal plan consisting of one or more meals and optionally attached videos.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         meal_plan_id:
           allOf:
@@ -1802,6 +1823,34 @@ components:
           format: date-time
           description: The date and time the meal plan was updated.
           example: 2020-01-01T00:00:00+00:00
+
+    # ##########################################
+    # Videos
+    # ##########################################
+
+    Video:
+      type: object
+      description: A watchable resource.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        video_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the video.
+        title:
+          type: string
+          description: The title of the video.
+          example: A video
+        body:
+          type: string
+          description: The body of the video.
+          example: A video details
+        video_url:
+          type: string
+          description: The URL of the video. May be null if the video can only be played via some other source.
+          nullable: true
+          example: https://example.com/video.mp4
 
     # ##########################################
     # Request- and response-specific
