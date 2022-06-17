@@ -30,10 +30,12 @@ info:
 tags:
   - name: Account
     description: Everything about accounts - account details, registration, statistics.
-  - name: Metabolic and Check-ins
-    description: Metabolic data retrieval and editing, submit check-ins.
   - name: Authentication
     description: Logging in, removing access.
+  - name: Metabolic and Check-ins
+    description: Metabolic data retrieval and editing, submit check-ins.
+  - name: Workouts
+    description: Workouts, exercises.
 
 externalDocs:
   description: Official API documentation
@@ -302,6 +304,438 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  "/workouts":
+    get:
+      summary: Get a list of workouts.
+      description: Get a list of workouts for the current customer. Requires that the customer is logged in. Some wo
+      tags:
+        - Workouts
+      operationId: workoutsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of workouts is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}":
+    get:
+      summary: Get a specific workout.
+      description: Get a specific workout for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A workout is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/views":
+    description: Mark a workout as viewed.
+    post:
+      summary: Mark a workout as viewed.
+      description: Mark a workout as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Workout marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises":
+    get:
+      summary: Get a list of exercises for a workout.
+      description: Get a list of exercises for a workout for the current customer. Requires that the customer is logged in. Some wo
+      tags:
+        - Workouts
+      operationId: workoutsExercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise for a workout.
+      description: Get a specific exercise for a workout for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsExercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}/completions":
+    description: Mark an exercise for a workout as completed.
+    post:
+      summary: Mark an exercise for a workout as completed.
+      description: Mark an exercise for a workout as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutExercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise for a workout to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}/views":
+    description: Mark an exercise for a workout as viewed.
+    post:
+      summary: Mark an exercise for a workout as viewed.
+      description: Mark an exercise for a workout as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsExercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises":
+    get:
+      summary: Get a list of exercises.
+      description: Get a list of exercises for the current customer. Requires that the customer is logged in. Some wo
+      tags:
+        - Workouts
+      operationId: exercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise.
+      description: Get a specific exercise for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}/completions":
+    description: Mark an exercise as completed.
+    post:
+      summary: Mark an exercise as completed.
+      description: Mark an exercise as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}/views":
+    description: Mark an exercise as viewed.
+    post:
+      summary: Mark an exercise as viewed.
+      description: Mark an exercise as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
 components:
   parameters:
     UserAgent:
@@ -384,6 +818,23 @@ components:
                 type: string
                 description: The error message.
                 example: "Too many requests."
+    "NotFound":
+      description: The requested resource does not exist or could not be found.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+            properties:
+              code:
+                type: integer
+                format: int32
+                description: The error code.
+                example: 404
+              message:
+                type: string
+                description: The error message.
+                example: "The requested resource does not exist or could not be found."
     default:
       description: An unexpected error occurred.
       content:
@@ -410,6 +861,31 @@ components:
           type: string
           description: The full size thumbnail.
           example: https://example.com/image.jpg
+
+    AccessRestrictions:
+      type: object
+      description: This resource is restricted for certain users. This object contains the restriction type and whether or not this customer has access.
+      properties:
+        access_workout_tier:
+          type: integer
+          format: int32
+          description: The workout tier this resource is restricted to.
+          example: 1
+        access_nutrition_tier:
+          type: integer
+          format: int32
+          description: The nutrition tier this resource is restricted to.
+          example: 1
+        allowed_tiers:
+          type: array
+          description: Access tiers that can access this resource.
+          items:
+            type: string
+            example: ultimate
+        has_access:
+          type: boolean
+          description: Whether or not the customer has access.
+          example: true
 
     # ##########################################
     # Account and customer
@@ -1576,6 +2052,14 @@ components:
           type: string
           description: The title of the workout.
           example: Arms day
+        exercises:
+          type: array
+          description: The exercises of the workout.
+          items:
+            $ref: "#/components/schemas/Exercise"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1586,11 +2070,6 @@ components:
           format: date-time
           description: The date the workout was updated.
           example: 2020-01-01T00:00:00+00:00
-        exercises:
-          type: array
-          description: The exercises of the workout.
-          items:
-            $ref: "#/components/schemas/Exercise"
 
     Exercise:
       description: An exercise. A part of a workout.
@@ -1626,9 +2105,21 @@ components:
             type: object
             allOf:
               - "$ref": "#/components/schemas/RepSetPair"
+        completed:
+          type: boolean
+          description: Whether the exercise is completed.
+          nullable: true
+          example: true
         video:
           type: object
           description: Video information for the exercise.
+          nullable: true
+          allOf:
+            - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          nullable: true
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1782,6 +2273,17 @@ components:
           nullable: true
           items:
             $ref: "#/components/schemas/Ingredient"
+        videos:
+          type: array
+          description: The videos of the meal.
+          nullable: true
+          items:
+            type: object
+            allOf:
+              - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1813,6 +2315,17 @@ components:
           nullable: true
           items:
             $ref: "#/components/schemas/Meal"
+        videos:
+          type: array
+          description: The videos of the meal plan.
+          nullable: true
+          items:
+            type: object
+            allOf:
+              - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1846,6 +2359,10 @@ components:
           type: string
           description: The body of the video.
           example: A video details
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
+          nullable: true
         video_url:
           type: string
           description: The URL of the video. May be null if the video can only be played via some other source.
