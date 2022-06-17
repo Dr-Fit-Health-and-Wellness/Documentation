@@ -895,7 +895,7 @@ components:
           type: string
           description: The stock status of the product.
           example: In Stock
-        image:
+        image_url:
           type: string
           description: URL of the main image of the product.
           example: https://example.com/image.jpg
@@ -1104,7 +1104,7 @@ components:
           allOf:
             - "$ref": "#/components/schemas/SystemID"
           description: The internal ID for the option.
-        image:
+        image_url:
           type: string
           description: The URL image of the option value.
           example: https://example.com/image.jpg
@@ -1650,6 +1650,158 @@ components:
     # ##########################################
     # Meals
     # ##########################################
+
+    Nutrients:
+      type: object
+      description: The nutrition facts for a meal or ingredient.
+      properties:
+        calories:
+          type: integer
+          format: int32
+          description: The total calories in kcal.
+          example: 100
+        total_fat:
+          type: integer
+          format: int32
+          description: The total fat in grams.
+          example: 10
+        saturated_fat:
+          type: integer
+          format: int32
+          description: The total saturated fat in grams.
+          example: 5
+        carbohydrates:
+          type: integer
+          format: int32
+          description: The total carbohydrates in grams.
+          example: 20
+        sugar:
+          type: integer
+          format: int32
+          description: The total sugar in grams.
+          example: 10
+        protein:
+          type: integer
+          format: int32
+          description: The total protein in grams.
+          example: 5
+        sodium:
+          type: integer
+          format: int32
+          description: The total sodium in milligrams.
+          example: 100
+
+    Ingredient:
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/Nutrients"
+      properties:
+        ingredient_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the ingredient.
+        title:
+          type: string
+          description: The title of the ingredient.
+          example: Carrot
+        calories:
+          description: The calories of the ingredient in kcal.
+        total_fat:
+          description: The fat of the ingredient in grams.
+        saturated_fat:
+          description: The saturated fat of the ingredient in grams.
+        carbohydrates:
+          description: The carbohydrates of the ingredient in grams.
+        sugar:
+          description: The sugar of the ingredient in grams.
+        protein:
+          description: The protein of the ingredient in grams.
+        sodium:
+          description: The sodium of the ingredient in milligrams.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the ingredient was added to the database (not necessarily a meal).
+          example: 2020-01-01T00:00:00+00:00
+
+    Meal:
+      type: object
+      properties:
+        meal_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the meal.
+        title:
+          type: string
+          description: The title of the meal.
+          example: Carrot and cheese
+        body_html:
+          type: string
+          description: The body of the meal.
+          example: Carrot and cheese details
+        image_url:
+          type: string
+          description: The image URL of the meal.
+          example: https://example.com/image.jpg
+        servings:
+          type: integer
+          format: int32
+          description: The number of servings of the meal.
+          example: 2
+        nutrition_total:
+          type: object
+          description: The nutrition information for the entire meal.
+          allOf:
+            - "$ref": "#/components/schemas/Nutrients"
+        nutrition_per_serving:
+          type: object
+          description: The nutrition of the meal for a single serving.
+          allOf:
+            - "$ref": "#/components/schemas/Nutrients"
+        ingredients:
+          type: array
+          description: The ingredients of the meal.
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Ingredient"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date and time the meal was added to the database.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date and time the meal was updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    MealPlan:
+      type: object
+      properties:
+        meal_plan_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the meal plan.
+        title:
+          type: string
+          description: The title of the meal plan.
+          example: Carrot and cheese
+        meals:
+          type: array
+          description: The meals in the meal plan.
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Meal"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date and time the meal plan was added to the database.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date and time the meal plan was updated.
+          example: 2020-01-01T00:00:00+00:00
 
     # ##########################################
     # Request- and response-specific
