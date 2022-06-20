@@ -243,6 +243,45 @@ paths:
           "$ref": "#/components/responses/Insecure"
         "429":
           "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Partially update this customer's fields.
+      description: Apply a partial update to a customer, editing it's customer fields or account fields. Metabolic data fields cannot be modified here. Some fields, like IDs, cannot be modified.
+      tags:
+        - Account
+      operationId: customerPatch
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+      responses:
+        "200":
+          description: Customer updated. Modified customer is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
 
   "/customers/_{customer_id}":
     get:
@@ -307,6 +346,599 @@ paths:
                   data:
                     type: object
                     "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Metabolic and check-ins
+  # ##########################################
+
+  "/check_ins/metabolic_entries":
+    get:
+      summary: Get a customer's metabolic entries.
+      description: Get the current customer's metabolic entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of metabolic entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new metabolic entry.
+      description: Create a new metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+      responses:
+        "201":
+          description: Metabolic entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/metabolic_entries/_{metabolic_entry_id}":
+    get:
+      summary: Get a specific customer's metabolic entry.
+      description: Get a specific customer's metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A metabolic entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a metabolic entry.
+      description: Edit a metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+      responses:
+        "200":
+          description: Metabolic entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a metabolic entry.
+      description: Delete a metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Metabolic entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/timeline_entries":
+    get:
+      summary: Get a customer's timeline entries.
+      description: Get the current customer's timeline entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of timeline entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new timeline entry.
+      description: Create a new timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+      responses:
+        "201":
+          description: Timeline entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+            multipart/form-data:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/timeline_entries/_{timeline_entry_id}":
+    get:
+      summary: Get a specific customer's timeline entry.
+      description: Get a specific customer's timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A timeline entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a timeline entry.
+      description: Edit a timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+      responses:
+        "200":
+          description: Timeline entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a timeline entry.
+      description: Delete a timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Timeline entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/journal_entries":
+    get:
+      summary: Get a customer's journal entries.
+      description: Get the current customer's journal entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of journal entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new journal entry.
+      description: Create a new journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+      responses:
+        "201":
+          description: Journal entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+            multipart/form-data:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/journal_entries/_{journal_entry_id}":
+    get:
+      summary: Get a specific customer's journal entry.
+      description: Get a specific customer's journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A journal entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a journal entry.
+      description: Edit a journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+      responses:
+        "200":
+          description: Journal entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a journal entry.
+      description: Delete a journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Journal entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -519,6 +1151,13 @@ paths:
       operationId: workoutExercisesComplete
       parameters:
         - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
         - name: exercise_id
           in: path
           description: The ID of the exercise for a workout to mark as completed.
@@ -1029,6 +1668,13 @@ paths:
             type: string
             description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
             example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
         - name: exercise_id
           in: path
           description: The ID of the exercise for a workout to mark as completed.
@@ -1932,9 +2578,9 @@ components:
 
     MetabolicData:
       description: Metabolic data (height, weight, gender) used to record progress and calculate values like BMR and TEE.
+      type: object
       allOf:
         - "$ref": "#/components/schemas/MetabolicDataMutable"
-      type: object
       properties:
         metabolic_id:
           allOf:
@@ -1963,6 +2609,14 @@ components:
           type: boolean
           description: Whether the timeline entry is private and not to be shared with coaches. If true, the entry can only be seen by the customer.
           example: true
+        image:
+          type: string
+          description: The image data. Will be a base64 encoded string.
+          nullable: true
+        image_type:
+          type: string
+          description: The image type. Can be a mime type or an extension.
+          nullable: true
 
     TimelineEntry:
       description: A photo upload meant to show someone's physical progress.
