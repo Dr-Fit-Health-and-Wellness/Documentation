@@ -35,7 +35,9 @@ tags:
   - name: Metabolic and Check-ins
     description: Metabolic data retrieval and editing, submit check-ins.
   - name: Workouts
-    description: Workouts, exercises.
+    description: Workouts, exercises, WOD workouts.
+  - name: Nutrition
+    description: Meals, meal plans, WOD meal plans.
 
 externalDocs:
   description: Official API documentation repository
@@ -62,6 +64,10 @@ servers:
         description: The base path of the API. Reflects the version to use.
 
 paths:
+  # ##########################################
+  # Authentication
+  # ##########################################
+
   "/auth/tokens":
     get:
       summary: Generate a new API key for a customer.
@@ -205,6 +211,10 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  # ##########################################
+  # Customers and accounts
+  # ##########################################
+
   "/customers":
     get:
       summary: Get a customer's details.
@@ -303,6 +313,10 @@ paths:
           "$ref": "#/components/responses/Insecure"
         "429":
           "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Workouts
+  # ##########################################
 
   "/workouts":
     get:
@@ -1094,6 +1108,461 @@ paths:
                   data:
                     type: object
                     "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals":
+    get:
+      summary: Get a list of meals.
+      description: Get a list of meals for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal.
+      description: Get a specific meal for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals/_{meal_id}/views":
+    description: Mark an meal as viewed.
+    post:
+      summary: Mark an meal as viewed.
+      description: Mark an meal as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans":
+    get:
+      summary: Get a list of meal plans.
+      description: Get a list of meal plans for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlansGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of meal plans is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MealPlan"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals":
+    get:
+      summary: Get a list of meals per a meal plan.
+      description: Get a list of meals per a meal plan for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal per a meal plan.
+      description: Get a specific meal per a meal plan for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals/_{meal_id}/views":
+    description: Mark an meal per a meal plan as viewed.
+    post:
+      summary: Mark an meal per a meal plan as viewed.
+      description: Mark an meal per a meal plan as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans":
+    get:
+      summary: Get a list of meal plans per a WOD.
+      description: Get a list of meal plans per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlansGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+      responses:
+        "200":
+          description: A list of meal plans per a WOD is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MealPlan"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals":
+    get:
+      summary: Get a list of meals per a meal plan per a WOD.
+      description: Get a list of meals per a meal plan per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal per a meal plan per a WOD.
+      description: Get a specific meal per a meal plan per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals/_{meal_id}/views":
+    description: Mark an meal per a meal plan per a WOD as viewed.
+    post:
+      summary: Mark an meal per a meal plan per a WOD as viewed.
+      description: Mark an meal per a meal plan per a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "404":
