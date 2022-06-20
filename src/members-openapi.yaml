@@ -38,8 +38,8 @@ tags:
     description: Workouts, exercises.
 
 externalDocs:
-  description: Official API documentation
-  url: https://docs.dev.drfit.io/
+  description: Official API documentation repository
+  url: https://github.com/Dr-Fit-Health-and-Wellness/Kinship
 
 servers:
   - url: https://members.api.drfit.io/{basePath}
@@ -307,7 +307,7 @@ paths:
   "/workouts":
     get:
       summary: Get a list of workouts.
-      description: Get a list of workouts for the current customer. Requires that the customer is logged in. Some wo
+      description: Get a list of workouts for the current customer. Requires that the customer is logged in.
       tags:
         - Workouts
       operationId: workoutsGet
@@ -414,7 +414,7 @@ paths:
   "/workouts/_{workout_id}/exercises":
     get:
       summary: Get a list of exercises for a workout.
-      description: Get a list of exercises for a workout for the current customer. Requires that the customer is logged in. Some wo
+      description: Get a list of exercises for a workout for the current customer. Requires that the customer is logged in.
       tags:
         - Workouts
       operationId: workoutsExercisesGet
@@ -588,7 +588,7 @@ paths:
   "/exercises":
     get:
       summary: Get a list of exercises.
-      description: Get a list of exercises for the current customer. Requires that the customer is logged in. Some wo
+      description: Get a list of exercises for the current customer. Requires that the customer is logged in.
       tags:
         - Workouts
       operationId: exercisesGet
@@ -707,6 +707,373 @@ paths:
       operationId: exercisesView
       parameters:
         - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods":
+    get:
+      summary: Get a list of WODs.
+      description: Get a list of WODs for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of WODs is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/WOD"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts":
+    get:
+      summary: Get a list of workouts for a WOD.
+      description: Get a list of workouts for a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+      responses:
+        "200":
+          description: A list of workouts is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}":
+    get:
+      summary: Get a specific workout from a WOD.
+      description: Get a specific workout from a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A workout is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/views":
+    description: Mark a workout in a WOD as viewed.
+    post:
+      summary: Mark a workout in a WOD as viewed.
+      description: Mark a workout in a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Workout marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises":
+    get:
+      summary: Get a list of exercises for a workout in a WOD.
+      description: Get a list of exercises for a workout in a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise for a workout in a WOD.
+      description: Get a specific exercise for a workout in a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}/completions":
+    description: Mark an exercise for a workout in a WOD as completed.
+    post:
+      summary: Mark an exercise for a workout in a WOD as completed.
+      description: Mark an exercise for a workout in a WOD as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutExercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise for a workout to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}/views":
+    description: Mark an exercise for a workout in a WOD as viewed.
+    post:
+      summary: Mark an exercise for a workout in a WOD as viewed.
+      description: Mark an exercise for a workout in a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
         - name: exercise_id
           in: path
           description: The ID of the exercise to mark as viewed.
@@ -2037,6 +2404,12 @@ components:
           items:
             allOf:
               - "$ref": "#/components/schemas/Workout"
+        meal_plans:
+          type: array
+          description: The meal plans of the WOD.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/MealPlan"
 
     Workout:
       description: A workout. Typically is something that you complete in one session and only once per day or couple of days.
@@ -2432,7 +2805,7 @@ components:
     apiKey:
       type: apiKey
       in: header
-      name: Authorization
+      name: X-Api-Key
       description: Authentication via API key or token sent in header.
     httpBasic:
       type: http
