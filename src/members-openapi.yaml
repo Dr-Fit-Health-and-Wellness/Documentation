@@ -34,6 +34,8 @@ tags:
     description: Logging in, removing access.
   - name: Catalog
     description: Products, store, categories.
+  - name: Orders
+    description: Orders and recurring profiles.
   - name: Metabolic and Check-ins
     description: Metabolic data retrieval and editing, submit check-ins.
   - name: Nutrition
@@ -349,6 +351,109 @@ paths:
                   data:
                     type: object
                     "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/messages/_{user_id}":
+    get:
+      summary: Get messages between a user and a customer.
+      description: Get the messages between a user and a customer. Requires that the customer is logged in and has access. Get possible user IDs via `/coaches`.
+      tags:
+        - Account
+      operationId: messagesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: user_id
+          in: path
+          description: User ID to get messages for.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Message"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/coaches":
+    get:
+      summary: Get a list of this user's coaches.
+      description: Get a list of all coaches. Requires that the customer is logged in and has access.
+      tags:
+        - Account
+      operationId: coachesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/User"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/coaches/_{user_id}":
+    get:
+      summary: Get the information of a specific coach.
+      description: Get the information of a specific coach. Requires that the customer is logged in and has access.
+      tags:
+        - Account
+      operationId: coachGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: user_id
+          in: path
+          description: User ID to get messages for.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/User"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -1058,10 +1163,6 @@ paths:
                     "$ref": "#/components/schemas/CheckIn"
 
   # ##########################################
-  # Orders
-  # ##########################################
-
-  # ##########################################
   # Products
   # ##########################################
 
@@ -1233,6 +1334,103 @@ paths:
                 type: array
                 items:
                   "$ref": "#/components/schemas/Information"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Orders
+  # ##########################################
+
+  "/orders":
+    get:
+      summary: Get a list of orders.
+      description: Get a list of orders. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: ordersGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of orders.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Order"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/orders/_{order_id}":
+    get:
+      summary: Get an order.
+      description: Get an order. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: ordersGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: order_id
+          in: path
+          description: Order ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: An order.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Order"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/orders/_{order_id}/downloads":
+    get:
+      summary: Get a list of downloads for an order.
+      description: Get a list of downloads for an order. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: downloadsGetByOrderID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: order_id
+          in: path
+          description: Order ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of downloads.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Download"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -3060,10 +3258,16 @@ components:
           type: string
           description: The body of the message.
           example: This is the message body.
-        recipient_id:
-          allOf:
-            - "$ref": "#/components/schemas/SystemID"
-          description: The user ID of the recipient of the message.
+        sender_id:
+          type: string
+          description: The ID of the sender. If the sender is a coach, then the ID is in the format u{user ID}. If the sender is a customer, then the ID is in the format c{customer ID}.
+          example: u1
+        recipient_ids:
+          type: array
+          description: The IDs of the recipients. If the recipient is a coach, then the ID is in the format u{user ID}. If the recipient is a customer, then the ID is in the format c{customer ID}.
+          items:
+            type: string
+          example: ["u1", "u2"]
 
     Message:
       description: A message from/to a coach.
@@ -3338,6 +3542,23 @@ components:
           description: The weight prefix of the option value.
           example: +
 
+    Download:
+      description: A download that is added to a virtual product.
+      type: object
+      properties:
+        download_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the download.
+        name:
+          type: string
+          description: The name of the download.
+          example: Ebook
+        url:
+          type: string
+          description: The URL of the download.
+          example: https://example.com/ebook.pdf
+
     Option:
       description: An option.
       type: object
@@ -3355,12 +3576,14 @@ components:
           format: int32
           description: The sort order of the option.
           example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/OptionDescription"
         values:
           type: array
           description: The values of the option.
           items:
-            allOf:
-              - "$ref": "#/components/schemas/OptionValue"
+            "$ref": "#/components/schemas/OptionValue"
       allOf:
         - "$ref": "#/components/schemas/OptionDescription"
 
@@ -3380,8 +3603,6 @@ components:
     OptionValue:
       description: An option value.
       type: object
-      allOf:
-        - "$ref": "#/components/schemas/OptionValueDescription"
       properties:
         option_value_id:
           allOf:
@@ -3396,6 +3617,9 @@ components:
           format: int32
           description: The sort order of the option value.
           example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/OptionValueDescription"
 
     OptionValueDescription:
       description: An option value description for a language. By default English is used. An alternate language can be supplied via a header.
