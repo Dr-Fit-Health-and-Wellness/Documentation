@@ -1090,6 +1090,74 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  "/products/_{product_id}":
+    get:
+      summary: Get a product.
+      description: Get a product.
+      tags:
+        - Catalog
+      operationId: productsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: product_id
+          in: path
+          description: Product ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A product.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/products/_{product_id}/reviews":
+    get:
+      summary: Get a list of reviews for a product.
+      description: Get a list of reviews for a product.
+      tags:
+        - Catalog
+      operationId: reviewsGetByProductID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: product_id
+          in: path
+          description: Product ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of reviews.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Review"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
   "/categories":
     get:
       summary: Get a list of categories.
@@ -1140,6 +1208,31 @@ paths:
                 type: array
                 items:
                   "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/informations":
+    get:
+      summary: Get a list of informations.
+      description: Get a list of informations.
+      tags:
+        - Catalog
+      operationId: informationsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of informations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Information"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -3741,6 +3834,110 @@ components:
           type: string
           format: date-time
           description: The date the category was modified.
+          example: 2020-01-01T00:00:00+00:00
+
+    InformationDescription:
+      description: A description of an information.
+      type: object
+      properties:
+        information_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated information.
+        language_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the language.
+        title:
+          type: string
+          description: The title of the information.
+          example: About Us
+        body:
+          type: string
+          description: The body of the information.
+          example: About us description.
+        title_html:
+          type: string
+          description: The title of the information with HTML tags.
+          example: About Us
+        body_html:
+          type: string
+          description: The body of the information with HTML tags.
+          example: About us description.
+        meta_title:
+          type: string
+          description: The meta title of the information.
+          example: About Us
+        meta_description:
+          type: string
+          description: The meta description of the information.
+          example: About us description.
+        meta_keywords:
+          type: string
+          description: The meta keywords of the information.
+          example: about, us, description
+
+    Information:
+      description: A description of an information.
+      type: object
+      properties:
+        information_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated information.
+        bottom:
+          type: boolean
+          description: Whether the information is at the bottom of the page.
+          example: true
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the information.
+          example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/InformationDescription"
+
+    Review:
+      description: A review.
+      type: object
+      properties:
+        review_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the review.
+        product_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated product.
+        customer_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated customer.
+        author:
+          type: string
+          description: The author of the review.
+          example: John Doe
+        body:
+          type: string
+          description: The body of the review.
+          example: Review body.
+        rating:
+          type: integer
+          format: int32
+          description: The rating of the review.
+          minimum: 1
+          maximum: 5
+          example: 5
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the review was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the review was modified.
           example: 2020-01-01T00:00:00+00:00
 
     # ##########################################
