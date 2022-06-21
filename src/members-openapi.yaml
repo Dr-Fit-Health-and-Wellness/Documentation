@@ -32,12 +32,14 @@ tags:
     description: Everything about accounts - account details, registration, statistics.
   - name: Authentication
     description: Logging in, removing access.
+  - name: Catalog
+    description: Products, store, categories.
   - name: Metabolic and Check-ins
     description: Metabolic data retrieval and editing, submit check-ins.
-  - name: Workouts
-    description: Workouts, exercises, WOD workouts.
   - name: Nutrition
     description: Meals, meal plans, WOD meal plans.
+  - name: Workouts
+    description: Workouts, exercises, WOD workouts.
 
 externalDocs:
   description: Official API documentation repository
@@ -89,6 +91,7 @@ paths:
           required: true
           schema:
             type: string
+            format: password
       responses:
         "200":
           description: A new API key was created and returned.
@@ -939,6 +942,204 @@ paths:
                   data:
                     type: object
                     "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins":
+    get:
+      summary: Get a list of check-in submissions.
+      description: Get a list of check-ins. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of check-ins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CheckIn"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Submit a new check-in.
+      description: Create a new check-in. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+      responses:
+        "201":
+          description: Check-in created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/CheckIn"
+    patch:
+      summary: Modify a check-in.
+      description: Modify a new check-in. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: check_in_id
+          in: path
+          description: Check-in ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+      responses:
+        "201":
+          description: Check-in modified.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/CheckIn"
+
+  # ##########################################
+  # Orders
+  # ##########################################
+
+  # ##########################################
+  # Products
+  # ##########################################
+
+  "/products":
+    get:
+      summary: Get a list of products.
+      description: Get a list of products.
+      tags:
+        - Catalog
+      operationId: productsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of products.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/categories":
+    get:
+      summary: Get a list of categories.
+      description: Get a list of categories.
+      tags:
+        - Catalog
+      operationId: categoriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Category"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/categories/_{category_id}/products":
+    get:
+      summary: Get a list of products in a category.
+      description: Get a list of products in a category.
+      tags:
+        - Catalog
+      operationId: productsGetByCategory
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: category_id
+          in: path
+          description: Category ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of products in the category.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Product"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -2928,6 +3129,13 @@ components:
           type: integer
           format: int32
           description: The number of times the product has been viewed.
+        description:
+          type: object
+          $ref: "#/components/schemas/ProductDescription"
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOption"
         datetime_added:
           type: string
           format: date-time
@@ -2988,6 +3196,10 @@ components:
           type: boolean
           description: Whether the option is required.
           example: true
+        option_value:
+          type: object
+          description: The product values of the option.
+          $ref: "#/components/schemas/ProductOptionValue"
         option:
           type: object
           description: The option.
@@ -3455,6 +3667,81 @@ components:
           type: string
           description: The shipping tracking number of the shipment.
           example: 123456789
+
+    CategoryDescription:
+      description: A description of a category.
+      type: object
+      properties:
+        category_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated category.
+        language_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the language.
+        title:
+          type: string
+          description: The title of the category.
+          example: Workout Plans
+        body:
+          type: string
+          description: The body of the category.
+          example: Workout plans description.
+        meta_title:
+          type: string
+          description: The meta title of the category.
+          example: Workout Plans
+        meta_description:
+          type: string
+          description: The meta description of the category.
+          example: Workout plans description.
+        meta_keywords:
+          type: string
+          description: The meta keywords of the category.
+          example: workout, plans, description
+
+    Category:
+      description: A category.
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        category_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the category.
+        parent_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the parent category.
+        top:
+          type: boolean
+          description: Whether the category is at the top level.
+          example: true
+        column:
+          type: integer
+          format: int32
+          description: The column of the category.
+          example: 1
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the category.
+          example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/CategoryDescription"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the category was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the category was modified.
+          example: 2020-01-01T00:00:00+00:00
 
     # ##########################################
     # Checkout and cart
