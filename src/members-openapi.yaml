@@ -358,6 +358,140 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  "/customers/statistics":
+    get:
+      summary: Get basic dashboard statistics.
+      description: Get basic statistics about the current customer. Requires that the customer is logged in.
+      tags:
+        - Account
+      operationId: customerStatistics
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: Customer is logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      points:
+                        description: Current number of Dr. Fit points. Not to be confused with reward points.
+                        type: integer
+                        format: int32
+                        example: 1000
+                      num_completed_workouts:
+                        description: The number of completed workouts.
+                        type: integer
+                        format: int32
+                        example: 10
+                      num_completed_exercises:
+                        description: The number of completed exercises.
+                        type: integer
+                        format: int32
+                        example: 20
+                      num_completed_workouts_week:
+                        description: The number of completed workouts this week.
+                        type: integer
+                        format: int32
+                        example: 40
+                      num_completed_exercises_week:
+                        description: The number of completed exercises this week.
+                        type: integer
+                        format: int32
+                        example: 30
+                      most_viewed_workouts:
+                        description: The most viewed workouts.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            workout_id:
+                              description: The workout ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The workout name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_exercises:
+                        description: The most viewed exercises.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            exercise_id:
+                              description: The exercise ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The exercise name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_meal_plans:
+                        description: The most viewed meal plans.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            meal_plan_id:
+                              description: The meal plan ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The meal plan name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_meals:
+                        description: The most viewed meals.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            meal_id:
+                              description: The meal ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The meal name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
   "/messages/_{user_id}":
     get:
       summary: Get messages between a user and a customer.
