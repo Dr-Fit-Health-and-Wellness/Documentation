@@ -30,14 +30,22 @@ info:
 tags:
   - name: Account
     description: Everything about accounts - account details, registration, statistics.
-  - name: Metabolic and Check-ins
-    description: Metabolic data retrieval and editing, submit check-ins.
   - name: Authentication
     description: Logging in, removing access.
+  - name: Catalog
+    description: Products, store, categories.
+  - name: Orders
+    description: Orders and recurring profiles.
+  - name: Metabolic and Check-ins
+    description: Metabolic data retrieval and editing, submit check-ins.
+  - name: Nutrition
+    description: Meals, meal plans, WOD meal plans.
+  - name: Workouts
+    description: Workouts, exercises, WOD workouts.
 
 externalDocs:
-  description: Official API documentation
-  url: https://docs.dev.drfit.io/
+  description: Official API documentation repository
+  url: https://github.com/Dr-Fit-Health-and-Wellness/Kinship
 
 servers:
   - url: https://members.api.drfit.io/{basePath}
@@ -60,6 +68,10 @@ servers:
         description: The base path of the API. Reflects the version to use.
 
 paths:
+  # ##########################################
+  # Authentication
+  # ##########################################
+
   "/auth/tokens":
     get:
       summary: Generate a new API key for a customer.
@@ -81,6 +93,7 @@ paths:
           required: true
           schema:
             type: string
+            format: password
       responses:
         "200":
           description: A new API key was created and returned.
@@ -203,6 +216,10 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  # ##########################################
+  # Customers and accounts
+  # ##########################################
+
   "/customers":
     get:
       summary: Get a customer's details.
@@ -215,6 +232,45 @@ paths:
       responses:
         "200":
           description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Customer"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Partially update this customer's fields.
+      description: Apply a partial update to a customer, editing it's customer fields or account fields. Metabolic data fields cannot be modified here. Some fields, like IDs, cannot be modified.
+      tags:
+        - Account
+      operationId: customerPatch
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CustomerMutable"
+      responses:
+        "200":
+          description: Customer updated. Modified customer is returned.
           content:
             application/json:
               schema:
@@ -302,6 +358,2492 @@ paths:
         "429":
           "$ref": "#/components/responses/RateLimited"
 
+  "/customers/statistics":
+    get:
+      summary: Get basic dashboard statistics.
+      description: Get basic statistics about the current customer. Requires that the customer is logged in.
+      tags:
+        - Account
+      operationId: customerStatistics
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: Customer is logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      points:
+                        description: Current number of Dr. Fit points. Not to be confused with reward points.
+                        type: integer
+                        format: int32
+                        example: 1000
+                      num_completed_workouts:
+                        description: The number of completed workouts.
+                        type: integer
+                        format: int32
+                        example: 10
+                      num_completed_exercises:
+                        description: The number of completed exercises.
+                        type: integer
+                        format: int32
+                        example: 20
+                      num_completed_workouts_week:
+                        description: The number of completed workouts this week.
+                        type: integer
+                        format: int32
+                        example: 40
+                      num_completed_exercises_week:
+                        description: The number of completed exercises this week.
+                        type: integer
+                        format: int32
+                        example: 30
+                      most_viewed_workouts:
+                        description: The most viewed workouts.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            workout_id:
+                              description: The workout ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The workout name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_exercises:
+                        description: The most viewed exercises.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            exercise_id:
+                              description: The exercise ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The exercise name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_meal_plans:
+                        description: The most viewed meal plans.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            meal_plan_id:
+                              description: The meal plan ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The meal plan name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+                      most_viewed_meals:
+                        description: The most viewed meals.
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            meal_id:
+                              description: The meal ID.
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              description: The meal name.
+                              type: string
+                              example: "Push-ups"
+                            num_views:
+                              description: The number of views.
+                              type: integer
+                              format: int32
+                              example: 100
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/messages/_{user_id}":
+    get:
+      summary: Get messages between a user and a customer.
+      description: Get the messages between a user and a customer. Requires that the customer is logged in and has access. Get possible user IDs via `/coaches`.
+      tags:
+        - Account
+      operationId: messagesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: user_id
+          in: path
+          description: User ID to get messages for.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Message"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/coaches":
+    get:
+      summary: Get a list of this user's coaches.
+      description: Get a list of all coaches. Requires that the customer is logged in and has access.
+      tags:
+        - Account
+      operationId: coachesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/User"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/coaches/_{user_id}":
+    get:
+      summary: Get the information of a specific coach.
+      description: Get the information of a specific coach. Requires that the customer is logged in and has access.
+      tags:
+        - Account
+      operationId: coachGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: user_id
+          in: path
+          description: User ID to get messages for.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Customer is logged in and exists.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/User"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Metabolic and check-ins
+  # ##########################################
+
+  "/check_ins/metabolic_entries":
+    get:
+      summary: Get a customer's metabolic entries.
+      description: Get the current customer's metabolic entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of metabolic entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new metabolic entry.
+      description: Create a new metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+      responses:
+        "201":
+          description: Metabolic entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/metabolic_entries/_{metabolic_entry_id}":
+    get:
+      summary: Get a specific customer's metabolic entry.
+      description: Get a specific customer's metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A metabolic entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a metabolic entry.
+      description: Edit a metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/MetabolicDataMutable"
+      responses:
+        "200":
+          description: Metabolic entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a metabolic entry.
+      description: Delete a metabolic entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: metabolicEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: metabolic_entry_id
+          in: path
+          description: Metabolic entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Metabolic entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/timeline_entries":
+    get:
+      summary: Get a customer's timeline entries.
+      description: Get the current customer's timeline entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of timeline entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new timeline entry.
+      description: Create a new timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+      responses:
+        "201":
+          description: Timeline entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+            multipart/form-data:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/timeline_entries/_{timeline_entry_id}":
+    get:
+      summary: Get a specific customer's timeline entry.
+      description: Get a specific customer's timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A timeline entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a timeline entry.
+      description: Edit a timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/TimelineEntryMutable"
+      responses:
+        "200":
+          description: Timeline entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a timeline entry.
+      description: Delete a timeline entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: timelineEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: timeline_entry_id
+          in: path
+          description: Timeline entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Timeline entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/journal_entries":
+    get:
+      summary: Get a customer's journal entries.
+      description: Get the current customer's journal entries. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of journal entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Create a new journal entry.
+      description: Create a new journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+      responses:
+        "201":
+          description: Journal entry created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+            multipart/form-data:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins/journal_entries/_{journal_entry_id}":
+    get:
+      summary: Get a specific customer's journal entry.
+      description: Get a specific customer's journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A journal entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    patch:
+      summary: Edit a journal entry.
+      description: Edit a journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesPatchByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/JournalEntryMutable"
+      responses:
+        "200":
+          description: Journal entry edited.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    delete:
+      summary: Delete a journal entry.
+      description: Delete a journal entry. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: journalEntriesDeleteByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: journal_entry_id
+          in: path
+          description: Journal entry ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Journal entry deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/JournalEntry"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/check_ins":
+    get:
+      summary: Get a list of check-in submissions.
+      description: Get a list of check-ins. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of check-ins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CheckIn"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+    post:
+      summary: Submit a new check-in.
+      description: Create a new check-in. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+      responses:
+        "201":
+          description: Check-in created.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/CheckIn"
+    patch:
+      summary: Modify a check-in.
+      description: Modify a new check-in. Requires that the customer is logged in.
+      tags:
+        - Metabolic and Check-ins
+      operationId: checkInsPost
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: check_in_id
+          in: path
+          description: Check-in ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+          multipart/form-data:
+            schema:
+              type: object
+              allOf:
+                - "$ref": "#/components/schemas/CheckInMutable"
+      responses:
+        "201":
+          description: Check-in modified.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/CheckIn"
+
+  # ##########################################
+  # Products
+  # ##########################################
+
+  "/products":
+    get:
+      summary: Get a list of products.
+      description: Get a list of products.
+      tags:
+        - Catalog
+      operationId: productsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of products.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/products/_{product_id}":
+    get:
+      summary: Get a product.
+      description: Get a product.
+      tags:
+        - Catalog
+      operationId: productsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: product_id
+          in: path
+          description: Product ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A product.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/products/_{product_id}/reviews":
+    get:
+      summary: Get a list of reviews for a product.
+      description: Get a list of reviews for a product.
+      tags:
+        - Catalog
+      operationId: reviewsGetByProductID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: product_id
+          in: path
+          description: Product ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of reviews.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Review"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/categories":
+    get:
+      summary: Get a list of categories.
+      description: Get a list of categories.
+      tags:
+        - Catalog
+      operationId: categoriesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Category"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/categories/_{category_id}/products":
+    get:
+      summary: Get a list of products in a category.
+      description: Get a list of products in a category.
+      tags:
+        - Catalog
+      operationId: productsGetByCategory
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: category_id
+          in: path
+          description: Category ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of products in the category.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Product"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/informations":
+    get:
+      summary: Get a list of informations.
+      description: Get a list of informations.
+      tags:
+        - Catalog
+      operationId: informationsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of informations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Information"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Orders
+  # ##########################################
+
+  "/orders":
+    get:
+      summary: Get a list of orders.
+      description: Get a list of orders. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: ordersGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of orders.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Order"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/orders/_{order_id}":
+    get:
+      summary: Get an order.
+      description: Get an order. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: ordersGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: order_id
+          in: path
+          description: Order ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: An order.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Order"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/orders/_{order_id}/downloads":
+    get:
+      summary: Get a list of downloads for an order.
+      description: Get a list of downloads for an order. The current user must be a registered customer.
+      tags:
+        - Orders
+      operationId: downloadsGetByOrderID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: order_id
+          in: path
+          description: Order ID to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of downloads.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Download"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  # ##########################################
+  # Workouts
+  # ##########################################
+
+  "/workouts":
+    get:
+      summary: Get a list of workouts.
+      description: Get a list of workouts for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of workouts is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}":
+    get:
+      summary: Get a specific workout.
+      description: Get a specific workout for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A workout is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/views":
+    description: Mark a workout as viewed.
+    post:
+      summary: Mark a workout as viewed.
+      description: Mark a workout as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Workout marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises":
+    get:
+      summary: Get a list of exercises for a workout.
+      description: Get a list of exercises for a workout for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsExercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise for a workout.
+      description: Get a specific exercise for a workout for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsExercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}/completions":
+    description: Mark an exercise for a workout as completed.
+    post:
+      summary: Mark an exercise for a workout as completed.
+      description: Mark an exercise for a workout as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutExercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise for a workout to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/workouts/_{workout_id}/exercises/_{exercise_id}/views":
+    description: Mark an exercise for a workout as viewed.
+    post:
+      summary: Mark an exercise for a workout as viewed.
+      description: Mark an exercise for a workout as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutsExercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises":
+    get:
+      summary: Get a list of exercises.
+      description: Get a list of exercises for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise.
+      description: Get a specific exercise for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}/completions":
+    description: Mark an exercise as completed.
+    post:
+      summary: Mark an exercise as completed.
+      description: Mark an exercise as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/exercises/_{exercise_id}/views":
+    description: Mark an exercise as viewed.
+    post:
+      summary: Mark an exercise as viewed.
+      description: Mark an exercise as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: exercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods":
+    get:
+      summary: Get a list of WODs.
+      description: Get a list of WODs for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of WODs is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/WOD"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts":
+    get:
+      summary: Get a list of workouts for a WOD.
+      description: Get a list of workouts for a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+      responses:
+        "200":
+          description: A list of workouts is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}":
+    get:
+      summary: Get a specific workout from a WOD.
+      description: Get a specific workout from a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A workout is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/views":
+    description: Mark a workout in a WOD as viewed.
+    post:
+      summary: Mark a workout in a WOD as viewed.
+      description: Mark a workout in a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Workout marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Workout"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises":
+    get:
+      summary: Get a list of exercises for a workout in a WOD.
+      description: Get a list of exercises for a workout in a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of exercises is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}":
+    get:
+      summary: Get a specific exercise for a workout in a WOD.
+      description: Get a specific exercise for a workout in a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A exercise is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}/completions":
+    description: Mark an exercise for a workout in a WOD as completed.
+    post:
+      summary: Mark an exercise for a workout in a WOD as completed.
+      description: Mark an exercise for a workout in a WOD as completed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: workoutExercisesComplete
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise for a workout to mark as completed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      next_workout_id:
+                        type: string
+                        nullable: true
+                        description: The ID of the next workout. Can be null if this is the last workout or if the exercise is not part of a distinct workout.
+                        "$ref": "#/components/schemas/SystemID"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/workouts/_{workout_id}/exercises/_{exercise_id}/views":
+    description: Mark an exercise for a workout in a WOD as viewed.
+    post:
+      summary: Mark an exercise for a workout in a WOD as viewed.
+      description: Mark an exercise for a workout in a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Workouts
+      operationId: wodsWorkoutsExercisesView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: workout_id
+          in: path
+          description: The ID of the workout to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: exercise_id
+          in: path
+          description: The ID of the exercise to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Exercise marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Exercise"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals":
+    get:
+      summary: Get a list of meals.
+      description: Get a list of meals for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal.
+      description: Get a specific meal for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meals/_{meal_id}/views":
+    description: Mark an meal as viewed.
+    post:
+      summary: Mark an meal as viewed.
+      description: Mark an meal as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans":
+    get:
+      summary: Get a list of meal plans.
+      description: Get a list of meal plans for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlansGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+      responses:
+        "200":
+          description: A list of meal plans is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MealPlan"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals":
+    get:
+      summary: Get a list of meals per a meal plan.
+      description: Get a list of meals per a meal plan for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal per a meal plan.
+      description: Get a specific meal per a meal plan for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/meal_plans/_{meal_plan_id}/meals/_{meal_id}/views":
+    description: Mark an meal per a meal plan as viewed.
+    post:
+      summary: Mark an meal per a meal plan as viewed.
+      description: Mark an meal per a meal plan as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: mealPlanMealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans":
+    get:
+      summary: Get a list of meal plans per a WOD.
+      description: Get a list of meal plans per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlansGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+      responses:
+        "200":
+          description: A list of meal plans per a WOD is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MealPlan"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals":
+    get:
+      summary: Get a list of meals per a meal plan per a WOD.
+      description: Get a list of meals per a meal plan per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsGet
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A list of meals is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals/_{meal_id}":
+    get:
+      summary: Get a specific meal per a meal plan per a WOD.
+      description: Get a specific meal per a meal plan per a WOD for the current customer. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsGetByID
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to get.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: A meal is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
+  "/wods/_{wod_id}/meal_plans/_{meal_plan_id}/meals/_{meal_id}/views":
+    description: Mark an meal per a meal plan per a WOD as viewed.
+    post:
+      summary: Mark an meal per a meal plan per a WOD as viewed.
+      description: Mark an meal per a meal plan per a WOD as viewed. Requires that the customer is logged in.
+      tags:
+        - Nutrition
+      operationId: wodMealPlanMealsView
+      parameters:
+        - $ref: "#/components/parameters/UserAgent"
+        - name: wod_id
+          in: path
+          description: The ID of the WOD to get.
+          required: true
+          schema:
+            type: string
+            description: Date of the WOD to get. Should be in the format yyyy-mm-dd.
+            example: "2020-01-01"
+        - name: meal_plan_id
+          in: path
+          description: The ID of the meal plan to operate on.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+        - name: meal_id
+          in: path
+          description: The ID of the meal to mark as viewed.
+          required: true
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/SystemID"
+      responses:
+        "200":
+          description: Meal marked as viewed.
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/Meal"
+        "401":
+          "$ref": "#/components/responses/Unauthorized"
+        "404":
+          "$ref": "#/components/responses/NotFound"
+        "426":
+          "$ref": "#/components/responses/Insecure"
+        "429":
+          "$ref": "#/components/responses/RateLimited"
+
 components:
   parameters:
     UserAgent:
@@ -384,6 +2926,23 @@ components:
                 type: string
                 description: The error message.
                 example: "Too many requests."
+    "NotFound":
+      description: The requested resource does not exist or could not be found.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/ErrorsModel"
+            properties:
+              code:
+                type: integer
+                format: int32
+                description: The error code.
+                example: 404
+              message:
+                type: string
+                description: The error message.
+                example: "The requested resource does not exist or could not be found."
     default:
       description: An unexpected error occurred.
       content:
@@ -398,6 +2957,43 @@ components:
       format: int32
       description: Internal ID used to reference this object.
       example: 1234
+
+    HasThumbnails:
+      type: object
+      properties:
+        thumbnail_image_small_url:
+          type: string
+          description: A smaller thumbnail for this resource.
+          example: https://example.com/image-s.jpg
+        thumbnail_image_url:
+          type: string
+          description: The full size thumbnail.
+          example: https://example.com/image.jpg
+
+    AccessRestrictions:
+      type: object
+      description: This resource is restricted for certain users. This object contains the restriction type and whether or not this customer has access.
+      properties:
+        access_workout_tier:
+          type: integer
+          format: int32
+          description: The workout tier this resource is restricted to.
+          example: 1
+        access_nutrition_tier:
+          type: integer
+          format: int32
+          description: The nutrition tier this resource is restricted to.
+          example: 1
+        allowed_tiers:
+          type: array
+          description: Access tiers that can access this resource.
+          items:
+            type: string
+            example: ultimate
+        has_access:
+          type: boolean
+          description: Whether or not the customer has access.
+          example: true
 
     # ##########################################
     # Account and customer
@@ -608,9 +3204,9 @@ components:
 
     MetabolicData:
       description: Metabolic data (height, weight, gender) used to record progress and calculate values like BMR and TEE.
+      type: object
       allOf:
         - "$ref": "#/components/schemas/MetabolicDataMutable"
-      type: object
       properties:
         metabolic_id:
           allOf:
@@ -639,6 +3235,14 @@ components:
           type: boolean
           description: Whether the timeline entry is private and not to be shared with coaches. If true, the entry can only be seen by the customer.
           example: true
+        image:
+          type: string
+          description: The image data. Will be a base64 encoded string.
+          nullable: true
+        image_type:
+          type: string
+          description: The image type. Can be a mime type or an extension.
+          nullable: true
 
     TimelineEntry:
       description: A photo upload meant to show someone's physical progress.
@@ -788,10 +3392,16 @@ components:
           type: string
           description: The body of the message.
           example: This is the message body.
-        recipient_id:
-          allOf:
-            - "$ref": "#/components/schemas/SystemID"
-          description: The user ID of the recipient of the message.
+        sender_id:
+          type: string
+          description: The ID of the sender. If the sender is a coach, then the ID is in the format u{user ID}. If the sender is a customer, then the ID is in the format c{customer ID}.
+          example: u1
+        recipient_ids:
+          type: array
+          description: The IDs of the recipients. If the recipient is a coach, then the ID is in the format u{user ID}. If the recipient is a customer, then the ID is in the format c{customer ID}.
+          items:
+            type: string
+          example: ["u1", "u2"]
 
     Message:
       description: A message from/to a coach.
@@ -895,7 +3505,7 @@ components:
           type: string
           description: The stock status of the product.
           example: In Stock
-        image:
+        image_url:
           type: string
           description: URL of the main image of the product.
           example: https://example.com/image.jpg
@@ -950,6 +3560,13 @@ components:
           type: integer
           format: int32
           description: The number of times the product has been viewed.
+        description:
+          type: object
+          $ref: "#/components/schemas/ProductDescription"
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductOption"
         datetime_added:
           type: string
           format: date-time
@@ -1010,6 +3627,10 @@ components:
           type: boolean
           description: Whether the option is required.
           example: true
+        option_value:
+          type: object
+          description: The product values of the option.
+          $ref: "#/components/schemas/ProductOptionValue"
         option:
           type: object
           description: The option.
@@ -1055,6 +3676,23 @@ components:
           description: The weight prefix of the option value.
           example: +
 
+    Download:
+      description: A download that is added to a virtual product.
+      type: object
+      properties:
+        download_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the download.
+        name:
+          type: string
+          description: The name of the download.
+          example: Ebook
+        url:
+          type: string
+          description: The URL of the download.
+          example: https://example.com/ebook.pdf
+
     Option:
       description: An option.
       type: object
@@ -1072,12 +3710,14 @@ components:
           format: int32
           description: The sort order of the option.
           example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/OptionDescription"
         values:
           type: array
           description: The values of the option.
           items:
-            allOf:
-              - "$ref": "#/components/schemas/OptionValue"
+            "$ref": "#/components/schemas/OptionValue"
       allOf:
         - "$ref": "#/components/schemas/OptionDescription"
 
@@ -1097,14 +3737,12 @@ components:
     OptionValue:
       description: An option value.
       type: object
-      allOf:
-        - "$ref": "#/components/schemas/OptionValueDescription"
       properties:
         option_value_id:
           allOf:
             - "$ref": "#/components/schemas/SystemID"
           description: The internal ID for the option.
-        image:
+        image_url:
           type: string
           description: The URL image of the option value.
           example: https://example.com/image.jpg
@@ -1113,6 +3751,9 @@ components:
           format: int32
           description: The sort order of the option value.
           example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/OptionValueDescription"
 
     OptionValueDescription:
       description: An option value description for a language. By default English is used. An alternate language can be supplied via a header.
@@ -1478,6 +4119,185 @@ components:
           description: The shipping tracking number of the shipment.
           example: 123456789
 
+    CategoryDescription:
+      description: A description of a category.
+      type: object
+      properties:
+        category_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated category.
+        language_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the language.
+        title:
+          type: string
+          description: The title of the category.
+          example: Workout Plans
+        body:
+          type: string
+          description: The body of the category.
+          example: Workout plans description.
+        meta_title:
+          type: string
+          description: The meta title of the category.
+          example: Workout Plans
+        meta_description:
+          type: string
+          description: The meta description of the category.
+          example: Workout plans description.
+        meta_keywords:
+          type: string
+          description: The meta keywords of the category.
+          example: workout, plans, description
+
+    Category:
+      description: A category.
+      type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        category_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the category.
+        parent_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the parent category.
+        top:
+          type: boolean
+          description: Whether the category is at the top level.
+          example: true
+        column:
+          type: integer
+          format: int32
+          description: The column of the category.
+          example: 1
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the category.
+          example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/CategoryDescription"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the category was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the category was modified.
+          example: 2020-01-01T00:00:00+00:00
+
+    InformationDescription:
+      description: A description of an information.
+      type: object
+      properties:
+        information_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated information.
+        language_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the language.
+        title:
+          type: string
+          description: The title of the information.
+          example: About Us
+        body:
+          type: string
+          description: The body of the information.
+          example: About us description.
+        title_html:
+          type: string
+          description: The title of the information with HTML tags.
+          example: About Us
+        body_html:
+          type: string
+          description: The body of the information with HTML tags.
+          example: About us description.
+        meta_title:
+          type: string
+          description: The meta title of the information.
+          example: About Us
+        meta_description:
+          type: string
+          description: The meta description of the information.
+          example: About us description.
+        meta_keywords:
+          type: string
+          description: The meta keywords of the information.
+          example: about, us, description
+
+    Information:
+      description: A description of an information.
+      type: object
+      properties:
+        information_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated information.
+        bottom:
+          type: boolean
+          description: Whether the information is at the bottom of the page.
+          example: true
+        sort_order:
+          type: integer
+          format: int32
+          description: The sort order of the information.
+          example: 1
+        description:
+          type: object
+          $ref: "#/components/schemas/InformationDescription"
+
+    Review:
+      description: A review.
+      type: object
+      properties:
+        review_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the review.
+        product_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated product.
+        customer_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the associated customer.
+        author:
+          type: string
+          description: The author of the review.
+          example: John Doe
+        body:
+          type: string
+          description: The body of the review.
+          example: Review body.
+        rating:
+          type: integer
+          format: int32
+          description: The rating of the review.
+          minimum: 1
+          maximum: 5
+          example: 5
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the review was added.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date the review was modified.
+          example: 2020-01-01T00:00:00+00:00
+
     # ##########################################
     # Checkout and cart
     # ##########################################
@@ -1528,6 +4348,8 @@ components:
     WOD:
       description: A workout of the day.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         assignment_group_id:
           allOf:
@@ -1547,10 +4369,18 @@ components:
           items:
             allOf:
               - "$ref": "#/components/schemas/Workout"
+        meal_plans:
+          type: array
+          description: The meal plans of the WOD.
+          items:
+            allOf:
+              - "$ref": "#/components/schemas/MealPlan"
 
     Workout:
       description: A workout. Typically is something that you complete in one session and only once per day or couple of days.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         workout_id:
           allOf:
@@ -1560,6 +4390,14 @@ components:
           type: string
           description: The title of the workout.
           example: Arms day
+        exercises:
+          type: array
+          description: The exercises of the workout.
+          items:
+            $ref: "#/components/schemas/Exercise"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1570,15 +4408,12 @@ components:
           format: date-time
           description: The date the workout was updated.
           example: 2020-01-01T00:00:00+00:00
-        exercises:
-          type: array
-          description: The exercises of the workout.
-          items:
-            $ref: "#/components/schemas/Exercise"
 
     Exercise:
       description: An exercise. A part of a workout.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
       properties:
         exercise_id:
           allOf:
@@ -1608,9 +4443,21 @@ components:
             type: object
             allOf:
               - "$ref": "#/components/schemas/RepSetPair"
+        completed:
+          type: boolean
+          description: Whether the exercise is completed.
+          nullable: true
+          example: true
         video:
           type: object
           description: Video information for the exercise.
+          nullable: true
+          allOf:
+            - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          nullable: true
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
         datetime_added:
           type: string
           format: date-time
@@ -1650,6 +4497,215 @@ components:
     # ##########################################
     # Meals
     # ##########################################
+
+    Nutrients:
+      type: object
+      description: The nutrition facts for a meal or ingredient.
+      properties:
+        calories:
+          type: integer
+          format: int32
+          description: The total calories in kcal.
+          example: 100
+        total_fat:
+          type: integer
+          format: int32
+          description: The total fat in grams.
+          example: 10
+        saturated_fat:
+          type: integer
+          format: int32
+          description: The total saturated fat in grams.
+          example: 5
+        carbohydrates:
+          type: integer
+          format: int32
+          description: The total carbohydrates in grams.
+          example: 20
+        sugar:
+          type: integer
+          format: int32
+          description: The total sugar in grams.
+          example: 10
+        protein:
+          type: integer
+          format: int32
+          description: The total protein in grams.
+          example: 5
+        sodium:
+          type: integer
+          format: int32
+          description: The total sodium in milligrams.
+          example: 100
+
+    Ingredient:
+      type: object
+      description: A component of a meal. Can be reused across meals.
+      allOf:
+        - "$ref": "#/components/schemas/Nutrients"
+      properties:
+        ingredient_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the ingredient.
+        title:
+          type: string
+          description: The title of the ingredient.
+          example: Carrot
+        calories:
+          description: The calories of the ingredient in kcal.
+        total_fat:
+          description: The fat of the ingredient in grams.
+        saturated_fat:
+          description: The saturated fat of the ingredient in grams.
+        carbohydrates:
+          description: The carbohydrates of the ingredient in grams.
+        sugar:
+          description: The sugar of the ingredient in grams.
+        protein:
+          description: The protein of the ingredient in grams.
+        sodium:
+          description: The sodium of the ingredient in milligrams.
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date the ingredient was added to the database (not necessarily a meal).
+          example: 2020-01-01T00:00:00+00:00
+
+    Meal:
+      type: object
+      description: A meal plan consisting of zero or more ingredients and optionally attached videos.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        meal_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the meal.
+        title:
+          type: string
+          description: The title of the meal.
+          example: Carrot and cheese
+        body_html:
+          type: string
+          description: The body of the meal.
+          example: Carrot and cheese details
+        servings:
+          type: integer
+          format: int32
+          description: The number of servings of the meal.
+          example: 2
+        nutrition_total:
+          type: object
+          description: The nutrition information for the entire meal.
+          allOf:
+            - "$ref": "#/components/schemas/Nutrients"
+        nutrition_per_serving:
+          type: object
+          description: The nutrition of the meal for a single serving.
+          allOf:
+            - "$ref": "#/components/schemas/Nutrients"
+        ingredients:
+          type: array
+          description: The ingredients of the meal.
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Ingredient"
+        videos:
+          type: array
+          description: The videos of the meal.
+          nullable: true
+          items:
+            type: object
+            allOf:
+              - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date and time the meal was added to the database.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date and time the meal was updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    MealPlan:
+      type: object
+      description: A meal plan consisting of one or more meals and optionally attached videos.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        meal_plan_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the meal plan.
+        title:
+          type: string
+          description: The title of the meal plan.
+          example: Carrot and cheese
+        meals:
+          type: array
+          description: The meals in the meal plan.
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Meal"
+        videos:
+          type: array
+          description: The videos of the meal plan.
+          nullable: true
+          items:
+            type: object
+            allOf:
+              - "$ref": "#/components/schemas/Video"
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
+        datetime_added:
+          type: string
+          format: date-time
+          description: The date and time the meal plan was added to the database.
+          example: 2020-01-01T00:00:00+00:00
+        datetime_updated:
+          type: string
+          format: date-time
+          description: The date and time the meal plan was updated.
+          example: 2020-01-01T00:00:00+00:00
+
+    # ##########################################
+    # Videos
+    # ##########################################
+
+    Video:
+      type: object
+      description: A watchable resource.
+      allOf:
+        - "$ref": "#/components/schemas/HasThumbnails"
+      properties:
+        video_id:
+          allOf:
+            - "$ref": "#/components/schemas/SystemID"
+          description: The internal ID for the video.
+        title:
+          type: string
+          description: The title of the video.
+          example: A video
+        body:
+          type: string
+          description: The body of the video.
+          example: A video details
+        access_restrictions:
+          allOf:
+            - "$ref": "#/components/schemas/AccessRestrictions"
+          nullable: true
+        video_url:
+          type: string
+          description: The URL of the video. May be null if the video can only be played via some other source.
+          nullable: true
+          example: https://example.com/video.mp4
 
     # ##########################################
     # Request- and response-specific
@@ -1714,7 +4770,7 @@ components:
     apiKey:
       type: apiKey
       in: header
-      name: Authorization
+      name: X-Api-Key
       description: Authentication via API key or token sent in header.
     httpBasic:
       type: http
