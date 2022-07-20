@@ -81,19 +81,6 @@ paths:
       operationId: authToken
       parameters:
         - $ref: "#/components/parameters/UserAgent"
-        - name: email
-          in: query
-          description: The email for login.
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login.
-          required: true
-          schema:
-            type: string
-            format: password
       responses:
         "200":
           description: A new API key was created and returned.
@@ -108,8 +95,8 @@ paths:
                     properties:
                       api_key:
                         type: string
-                        description: The new API key. It is a 256-bit string of numbers and mixed-case letters. Will be 256 characters long.
-                        example: foNf083DF...
+                        description: The new API key. It is a 256-bit string of numbers and mixed-case letters. Will be 128 characters long.
+                        example: abcd1234
                       customer:
                         type: object
                         "$ref": "#/components/schemas/Customer"
@@ -147,7 +134,16 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/DataModel"
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count_deleted:
+                        type: integer
+                        description: The number of API keys deleted.
+                        example: 1
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -171,7 +167,16 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/DataModel"
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      count_deleted:
+                        type: integer
+                        description: The number of API keys deleted.
+                        example: 1
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -3144,6 +3149,8 @@ components:
     Customer:
       description: Customer data as returned from the API.
       type: object
+      allOf:
+        - "$ref": "#/components/schemas/CustomerMutable"
       properties:
         customer_id:
           allOf:
