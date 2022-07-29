@@ -524,9 +524,25 @@ paths:
                   - "$ref": "#/components/schemas/DataModel"
                 properties:
                   data:
-                    type: array
-                    items:
-                      "$ref": "#/components/schemas/Message"
+                    type: object
+                    properties:
+                      messages:
+                        description: The messages.
+                        type: array
+                        items:
+                          "$ref": "#/components/schemas/Message"
+                      next_page:
+                        description: The next page of messages.
+                        type: integer
+                        format: int32
+                        example: 3
+                        nullable: true
+                      previous_page:
+                        description: The previous page of messages.
+                        type: integer
+                        format: int32
+                        example: 1
+                        nullable: true
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
