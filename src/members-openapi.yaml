@@ -54,7 +54,7 @@ servers:
       basePath:
         default: v1
         description: The base path of the API. Reflects the version to use.
-  - url: https://members.api.drfit.feroxpayapi.com/{basePath}
+  - url: https://members.api.sandbox.dev.drfit.io/{basePath}
     description: Development sandbox server
     variables:
       basePath:
@@ -570,9 +570,13 @@ paths:
                   - "$ref": "#/components/schemas/DataModel"
                 properties:
                   data:
-                    type: array
-                    items:
-                      "$ref": "#/components/schemas/User"
+                    type: object
+                    properties:
+                      coaches:
+                        description: The users.
+                        type: array
+                        items:
+                          "$ref": "#/components/schemas/User"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -1336,9 +1340,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/Product"
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  products:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Product"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
