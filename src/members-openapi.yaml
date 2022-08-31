@@ -1413,9 +1413,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/Review"
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          "$ref": "#/components/schemas/Review"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
