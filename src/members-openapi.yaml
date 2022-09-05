@@ -1228,9 +1228,15 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/CheckIn"
+                type: object
+                allOf:
+                  - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      "$ref": "#/components/schemas/CheckIn"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
