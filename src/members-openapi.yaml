@@ -644,9 +644,13 @@ paths:
                   - "$ref": "#/components/schemas/DataModel"
                 properties:
                   data:
-                    type: array
-                    items:
-                      "$ref": "#/components/schemas/MetabolicData"
+                    type: object
+                    properties:
+                      metabolic_entries:
+                        description: The metabolic entries.
+                        type: array
+                        items:
+                          "$ref": "#/components/schemas/MetabolicData"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
