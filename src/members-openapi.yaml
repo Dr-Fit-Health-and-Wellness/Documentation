@@ -778,6 +778,10 @@ paths:
                 type: object
                 allOf:
                   - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/MetabolicData"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
@@ -800,7 +804,7 @@ paths:
             allOf:
               - "$ref": "#/components/schemas/SystemID"
       responses:
-        "200":
+        "204":
           description: Metabolic entry deleted.
           content:
             application/json:
@@ -808,10 +812,6 @@ paths:
                 type: object
                 allOf:
                   - "$ref": "#/components/schemas/DataModel"
-                properties:
-                  data:
-                    type: object
-                    "$ref": "#/components/schemas/MetabolicData"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
