@@ -2,9 +2,9 @@
 openapi: 3.0.2
 
 info:
-  title: Dr. Fit API
+  title: DrFit API
   description: >-
-    Dr. Fit API. Meant for enabling application development and customer
+    DrFit API. Meant for enabling application development and customer
     integrations.
 
 
@@ -23,7 +23,7 @@ info:
   version: 0.0.1
   termsOfService: https://drfit.io/index.php?route=legal/terms_of_service
   contact:
-    name: Dr. Fit
+    name: DrFit
     email: contact@drfit.io
     url: https://drfit.io/index.php?route=common/contact
 
@@ -386,7 +386,7 @@ paths:
                     type: object
                     properties:
                       points:
-                        description: Current number of Dr. Fit points. Not to be confused with reward points.
+                        description: Current number of DrFit points. Not to be confused with reward points.
                         type: integer
                         format: int32
                         example: 1000
@@ -2901,7 +2901,7 @@ components:
       required: true
       schema:
         type: string
-        example: "Dr. Fit/1.0.0"
+        example: "DrFit/1.0.0"
 
     ApiToken:
       name: token
@@ -3181,7 +3181,7 @@ components:
           example: +15555555555
         newsletter:
           type: boolean
-          description: Whether the customer wants to receive emails from Dr. Fit.
+          description: Whether the customer wants to receive emails from DrFit.
           example: true
         account:
           type: object

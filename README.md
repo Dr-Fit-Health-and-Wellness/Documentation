@@ -1,4 +1,4 @@
-# Dr. Fit Developer Documentation
+# DrFit Developer Documentation
 
 ![](/assets/drfit-square-128.png)
 

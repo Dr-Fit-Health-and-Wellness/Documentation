@@ -1,7 +1,7 @@
 {
   "name": "drfitdocumentation",
   "version": "1.0.0",
-  "description": "Documentation for Dr. Fit APIs and services.",
+  "description": "Documentation for DrFit APIs and services.",
   "scripts": {
     "build": "webpack",
     "start": "webpack-dev-server --open"
