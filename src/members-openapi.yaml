@@ -977,6 +977,10 @@ paths:
                 type: object
                 allOf:
                   - "$ref": "#/components/schemas/DataModel"
+                properties:
+                  data:
+                    type: object
+                    "$ref": "#/components/schemas/TimelineEntry"
         "401":
           "$ref": "#/components/responses/Unauthorized"
         "426":
