@@ -3405,9 +3405,14 @@ components:
           description: Any supplements the customer took, only for ultimate members.
           example: I took supplements.
           nullable: true
+        other_grateful_for:
+          type: string
+          description: What the customer is grateful for. Optional.
+          example: I am grateful for...
+          nullable: true
         other_comments:
           type: string
-          description: Any other comments the customer had.
+          description: Any other comments the customer had. Optional.
           example: I had a comment.
           nullable: true
 
